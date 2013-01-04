@@ -37,17 +37,18 @@ var Scene = exports.Scene = function(director, sceneId, objects_list) {
     	}
     	obj.draw(display);
 
-		debug_val = font.render(obj.pos, '#555');
+		debug_val = font.render(pos, '#555');
         display.blit(debug_val);
 	};
 
 	function initScene() {
-		//image = gamejs.image.load(sceneConfig.image);
+		image = gamejs.image.load(sceneConfig.image);
+        image = gamejs.transform.scale(image, [256,224]);
         var obj = new Object();
 	};
 
 	var sceneId = sceneId || 0;
-	//var sceneConfig = config.scenes[sceneId];
+	var sceneConfig = config.scenes[sceneId];
 	var elapsed = 0;
 	var image;
     var pos;
