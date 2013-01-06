@@ -28,7 +28,7 @@ exports.Director = function() {
         return currentScene;
     };
 
-    var display = gamejs.display.setMode([config.WIDTH, config.HEIGHT]);
+    var display = gamejs.display.setMode([config.WIDTH * config.SCALE, config.HEIGHT * config.SCALE]);
     gamejs.transform.scale(display, [config.WIDTH * config.SCALE, config.HEIGHT * config.SCALE]);
     gamejs.time.fpsCallback(tick, this, 60);
     return this;
