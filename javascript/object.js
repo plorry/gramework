@@ -11,7 +11,7 @@ var Object = exports.Object = function(pos) {
     this.y_speed = 0;
     this.x_accel = 0;
     this.y_accel = 0;
-    this.y_max = 5;
+    this.y_max = 10;
     this.bounce = 0.8;
     
     this.behaviours = [];

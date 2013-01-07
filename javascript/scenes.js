@@ -21,7 +21,9 @@ var Scene = exports.Scene = function(director, sceneId, objects_list) {
     var obj = new Object([14,14]);
     var grav = new Gravity();
     var bounce = new Bounce();
-    var view = new gamejs.Surface([256, 240]);
+    var view = new gamejs.Surface([800, 600]);
+    var subrect = new gamejs.Rect([0,0],[256, 224]);
+    
     var zoom = 1;
     var zoom_rate = 1;
     obj.assign(grav);
@@ -53,17 +55,31 @@ var Scene = exports.Scene = function(director, sceneId, objects_list) {
 	};
 
 	this.draw = function(display) {
-		view.fill("#F0A30F");
+		display.fill("#F0A30F");
 		if (image) {
-    		view.blit(image, [0,0], new gamejs.Rect([0,0],[500,500]));
+    		view.blit(image);
     	}
     	obj.draw(view);
 
-		debug_val = font.render(obj.is_falling, '#555');
+        subrect.width = config.WIDTH / zoom;
+        subrect.height = config.HEIGHT / zoom;
+
+        subrect.center = obj.pos;
         
-        view_rect = new gamejs.Rect([0,0],[config.WIDTH / zoom, config.HEIGHT / zoom]);
-        //display.blit(view, [0,0], view_rect);
-        display.blit(view);
+        if (subrect.top < 0) {subrect.top = 0;}
+        if(subrect.left < 0 ) {subrect.left = 0;}
+        
+        
+        var subview = new gamejs.Surface(subrect);
+        
+        view_size = view.getSize();
+        subview.blit(view,[0,0]);
+        scaled_view = gamejs.transform.scale(subview, [subrect.width * zoom, subrect.height * zoom]);
+        //scaled_view = subview;
+        
+        display.blit(scaled_view);
+        
+        debug_val = font.render(obj.pos, '#555');
         display.blit(debug_val);
     };
 
