@@ -24,7 +24,7 @@ var Scene = exports.Scene = function(director, sceneId, objects_list) {
     var view = new gamejs.Surface([800, 600]);
     var subrect = new gamejs.Rect([0,0],[256, 224]);
     
-    var zoom = 1;
+    var zoom = 0.7;
     var zoom_rate = 1;
     obj.assign(grav);
     obj.assign(bounce);
@@ -67,19 +67,21 @@ var Scene = exports.Scene = function(director, sceneId, objects_list) {
         subrect.center = obj.pos;
         
         if (subrect.top < 0) {subrect.top = 0;}
-        if(subrect.left < 0 ) {subrect.left = 0;}
+        if (subrect.left < 0 ) {subrect.left = 0;}
         
+        view_size = view.getSize();
+        if (subrect.width > view_size[0]) {subrect.width = view_size[0];}
+        if (subrect.height > view_size[1]) {subrect.height = view_size[1];}
         
         var subview = new gamejs.Surface(subrect);
         
-        view_size = view.getSize();
-        subview.blit(view,[0,0]);
+        subview.blit(view,[0,0], subrect);
         scaled_view = gamejs.transform.scale(subview, [subrect.width * zoom, subrect.height * zoom]);
         //scaled_view = subview;
         
         display.blit(scaled_view);
         
-        debug_val = font.render(obj.pos, '#555');
+        debug_val = font.render(subrect.bottom, '#555');
         display.blit(debug_val);
     };
 
