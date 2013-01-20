@@ -1,13 +1,20 @@
 var gamejs = require('gamejs');
+var draw = require('gamejs/draw');
 var config = require('./config');
 var draw = require('gamejs/draw');
 var Object = require('./object').Object;
+var FourDirection = require('./object').FourDirection;
 var Gravity = require('./object').Gravity;
 var Bounce = require('./object').Bounce;
+var Camera = require('./camera').Camera;
+var SpriteSheet = require('./animate').SpriteSheet;
+var Animation = require('./animate').Animation;
 
 var image_rect = [0,0,config.WIDTH,config.HEIGHT];
 
 var font = new gamejs.font.Font('20px Lucida Console');
+
+
 
 var sounds = {
 
@@ -16,86 +23,80 @@ var sounds = {
 //Scene Class
 
 var Scene = exports.Scene = function(director, sceneId, objects_list) {
-    var objects_list = objects_list || null;
-	var debug_val = 0;
-    var obj = new Object([14,14]);
-    var grav = new Gravity();
-    var bounce = new Bounce();
-    var view = new gamejs.Surface([800, 600]);
-    var subrect = new gamejs.Rect([0,0],[256, 224]);
-    
-    var zoom = 0.7;
-    var zoom_rate = 1;
-    obj.assign(grav);
-    obj.assign(bounce);
-    
-	this.handleEvent = function(event) {
-		//Gotta re-position the mouse coords based on the scale of the surface
-		//event.pos = [event.pos[0] / config.SCALE, event.pos[1] / config.SCALE];
-        //pos = event.pos;
-        
-        if (event.type === gamejs.event.KEY_DOWN) {
-            if (event.key === gamejs.event.K_UP) {
-                zoom_rate = 1.1;
-            }
-            if (event.key === gamejs.event.K_DOWN) {
-                zoom_rate = 0.9;
-            }
-        } else if (event.type === gamejs.event.KEY_UP) {    
-            zoom_rate = 1;
-        }
+	
+	this.peter_anims = {
+		'static': [0]
 	};
+ 
+	this.objects_list = objects_list || null;
+	this.debug_val = 0;
+	this.obj = new Object([14,14]);
+	this.guy = new FourDirection([5,5]);
+    this.grav = new Gravity();
+    this.bounce = new Bounce();
+    this.view = new gamejs.Surface([800, 600]);
+	this.camera = new Camera(this);
 
-	this.update = function(msDuration) {
-        obj.update(msDuration);
-		if (objects_list) {
-            
-        }
-        zoom *= zoom_rate;
-	};
-
-	this.draw = function(display) {
-		display.fill("#F0A30F");
-		if (image) {
-    		view.blit(image);
-    	}
-    	obj.draw(view);
-
-        subrect.width = config.WIDTH / zoom;
-        subrect.height = config.HEIGHT / zoom;
-
-        subrect.center = obj.pos;
-        
-        if (subrect.top < 0) {subrect.top = 0;}
-        if (subrect.left < 0 ) {subrect.left = 0;}
-        
-        view_size = view.getSize();
-        if (subrect.width > view_size[0]) {subrect.width = view_size[0];}
-        if (subrect.height > view_size[1]) {subrect.height = view_size[1];}
-        
-        var subview = new gamejs.Surface(subrect);
-        
-        subview.blit(view,[0,0], subrect);
-        scaled_view = gamejs.transform.scale(subview, [subrect.width * zoom, subrect.height * zoom]);
-        //scaled_view = subview;
-        
-        display.blit(scaled_view);
-        
-        debug_val = font.render(subrect.bottom, '#555');
-        display.blit(debug_val);
-    };
-
-	function initScene() {
-		image = gamejs.image.load(sceneConfig.image);
-        //image = gamejs.transform.scale(image, [256,224]);
-	};
+    this.obj.assign(this.grav);
+    this.obj.assign(this.bounce);
 
 	var sceneId = sceneId || 0;
 	var sceneConfig = config.scenes[sceneId];
 	var elapsed = 0;
-	var image;
+	this.image = null;
     var pos;
-	initScene();
+	this.initScene(sceneConfig);
 
 	return this;
 };
+
+Scene.prototype.initScene = function(sceneConfig) {
+	this.peter_file = './static/images/sprites/peter.png';
+	this.peter = new SpriteSheet(this.peter_file, {width:14, height:24});
+	this.guy = new FourDirection([5,5], this.peter, this.peter_anims);
+	this.camera.follow(this.guy);
+	
+	this.image = gamejs.image.load(sceneConfig.image);
+	return;
+};
+
+Scene.prototype.draw = function(display) {
+	display.fill("#F0A30F");
+	if (this.image) {
+		this.view.blit(this.image);
+	}
+	//draw.rect(this.view, "#000444", new gamejs.Rect([0,0], [256,224]));
+	this.obj.draw(this.view);
+	this.guy.draw(this.view);
+
+	display.blit(this.camera.draw());
+	
+    var debug_val = font.render(this.obj.pos, '#555');
+    //display.blit(debug_val);
+};
+
+
+Scene.prototype.handleEvent = function(event) {
+	this.guy.handleEvent(event);
+	
+	if (event.type === gamejs.event.KEY_DOWN) {
+		if (event.key === gamejs.event.K_SPACE) {
+			console.log(this.camera.dest);
+			console.log(this.guy.rect.center);
+		}
+	}
+	
+	return;
+};
+
+Scene.prototype.update = function(msDuration) {
+    this.obj.update(msDuration);
+	this.guy.update(msDuration);
+	if (this.objects_list) {
+        
+    }
+	this.camera.update(msDuration);
+    //this.zoom *= this.zoom_rate;
+	return;
+};
+

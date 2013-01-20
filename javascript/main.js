@@ -4,10 +4,9 @@ var Director = require('./game').Director;
 
 
 gamejs.preload([
-    './static/images/backgrounds/background1.jpg'
+	'./static/images/backgrounds/background1.jpg',
+	'./static/images/sprites/peter.png'
 ]);
-
-
 
 function main() {
 
@@ -15,7 +14,6 @@ function main() {
     var firstScene = new Scene(director, 0);
     director.start(firstScene);
     return;
-
 }
 
 gamejs.ready(main);
