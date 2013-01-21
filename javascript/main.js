@@ -4,7 +4,6 @@ var resources = require('./project/resources').resources;
 gamejs.preload(
 	resources
 );
-console.log('loaded');
 
 var Scene = require('./scenes').Scene;
 var Director = require('./game').Director;

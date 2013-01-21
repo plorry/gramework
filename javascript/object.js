@@ -83,6 +83,10 @@ Object.prototype.update = function(msDuration) {
 			} else {
 				this.lookingRight = false;
 			}
+			this.targetDistance = Math.sqrt(
+				Math.pow(this.rect.center[0] - this.lookingAt.rect.center[0], 2)
+				+ Math.pow(this.rect.center[1] - this.lookingAt.rect.center[1], 2)
+			);
 		}
 		if (this.lookingRight) {
 			this.image = gamejs.transform.flip(this.image, true, false);
@@ -98,38 +102,6 @@ Object.prototype.draw = function(display) {
 		draw.rect(display, "#000FFF", new gamejs.Rect(this.pos, [5,5]));
 	}
 	return;
-};
-
-/*
-var Behaviour = function(object) {
-    this.object = object;
-    return this;
-};
-*/
-
-var Gravity = exports.Gravity = function() {
-    //Behaviour.call(this, object);
-    this.accel = 0.2;
-    
-    this.set_accel = function(accel) {
-        this.accel = accel;
-    };
-    
-    this.update = function(object) {
-        if (object.y_speed < object.y_max) {
-            object.y_speed += this.accel;
-        }
-    };
-    return this;
-};
-
-var Bounce = exports.Bounce = function() {
-    this.update = function(object) {
-        if (object.pos[1] > config.HEIGHT && object.is_falling == true) {
-            object.y_speed = -(object.y_speed) * object.bounce;
-        }
-    };
-    return this;
 };
 
 var defaultMapping = {
@@ -177,8 +149,11 @@ FourDirection.prototype.lookAt = function(obj) {
 FourDirection.prototype.update = function(msDuration) {
 	Object.prototype.update.apply(this, arguments);
 	
+	//AI for NPCs
 	if (!this.playerControlled) {
 		this.choiceCounter++;
+		
+		
 	}
 	
 	//Get to the destination

@@ -8,13 +8,9 @@ var Camera = exports.Camera = function(scene) {
 	this.dest = null;
 	this.xSpeed = 0;
 	this.ySpeed = 0;
-	this.zoom = 0.6;
+	this.zoom = 1;
 	this.zoom_multiplier = 1;
-	
-	console.log(this.zoom);
-	console.log(this.scene.view.getSize());
-	console.log(this.rect);
-	console.log(this.rect);
+	this.targetZoom = null;
 	return this;
 };
 
@@ -39,6 +35,19 @@ Camera.prototype.update = function(msDuration) {
 		this.dest = this.center.rect.center;
 	}
 	
+	if (this.targetZoom !== null) {
+		if (this.targetZoom > this.zoom) {
+			this.zoom_multiplier = 1 + ((this.targetZoom - this.zoom) * 0.1); 
+		}
+		if (this.targetZoom < this.zoom) {
+			this.zoom_multiplier = 1 + ((this.targetZoom - this.zoom) * 0.1); 
+		}
+		if (this.targetZoom == this.zoom) {
+			this.targetZoom = null;
+			this.zoom_multiplier = 1;
+		}
+	}
+	
 	scene_size = this.scene.view.getSize();
 	
 	if (this.rect.width < scene_size[0] && this.rect.height < scene_size[1]) {
@@ -57,13 +66,13 @@ Camera.prototype.update = function(msDuration) {
 	if (this.rect.bottom > scene_size[1]) {this.rect.bottom = scene_size[1];}
 	if (this.rect.right > scene_size[0]) {this.rect.right = scene_size[0];}
 	
-	this.view = new gamejs.Surface(this.rect.width, this.rect.height);
+	this.view = new gamejs.Surface(scene_size);
+	
 	this.view.blit(this.scene.view, [0,0], this.rect);
 	
 	this.display = gamejs.transform.scale(this.view, [
 		this.rect.width * this.zoom,
 		this.rect.height * this.zoom]);
-	//this.display = view;
 	return;
 }
 
@@ -77,4 +86,8 @@ Camera.prototype.panto = function(pos) {
 
 Camera.prototype.follow = function(obj) {
 	this.center = obj;
-}
+};
+
+Camera.prototype.zoomTo = function(zoom) {
+	this.targetZoom = zoom;
+};

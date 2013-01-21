@@ -30,7 +30,9 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 	var elapsed = 0;
 	this.image = null;
 	this.initScene(sceneConfig);
-
+	
+	this.camera.follow(peter);
+	
 	return this;
 };
 
@@ -56,7 +58,13 @@ Scene.prototype.handleEvent = function(event) {
 	
 	if (event.type === gamejs.event.KEY_DOWN) {
 		if (event.key === gamejs.event.K_SPACE) {
-			console.log(this.objects_list);
+			//LOG STUFF HERE
+			this.camera.zoomTo(2);
+		}
+	}
+	if (event.type === gamejs.event.KEY_UP) {
+		if (event.key === gamejs.event.K_SPACE) {
+			this.camera.zoomTo(1);
 		}
 	}
 	
