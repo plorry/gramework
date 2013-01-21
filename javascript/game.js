@@ -1,5 +1,5 @@
 var gamejs = require('gamejs');
-var config = require('./config');
+var config = require('./project/config');
 
 exports.Director = function() {
 	var onAir = false;

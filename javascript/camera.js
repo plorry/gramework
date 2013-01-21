@@ -1,22 +1,20 @@
 var gamejs = require('gamejs');
-var config = require('./config');
+var config = require('./project/config');
 
 var Camera = exports.Camera = function(scene) {
-
-	this.display = new gamejs.Surface([config.WIDTH, config.HEIGHT]);
 	this.rect = new gamejs.Rect([0,0], [config.WIDTH, config.HEIGHT]);
 	this.scene = scene;
 	this.center = null;
 	this.dest = null;
 	this.xSpeed = 0;
 	this.ySpeed = 0;
-	this.zoom = 1;
+	this.zoom = 0.6;
 	this.zoom_multiplier = 1;
 	
+	console.log(this.zoom);
 	console.log(this.scene.view.getSize());
 	console.log(this.rect);
-	console.log(this.display.getSize());
-	
+	console.log(this.rect);
 	return this;
 };
 
@@ -41,11 +39,17 @@ Camera.prototype.update = function(msDuration) {
 		this.dest = this.center.rect.center;
 	}
 	
-	this.zoom = this.zoom * this.zoom_multiplier;
+	scene_size = this.scene.view.getSize();
+	
+	if (this.rect.width < scene_size[0] && this.rect.height < scene_size[1]) {
+		this.zoom = this.zoom * this.zoom_multiplier;
+	}
 	this.rect.width = config.WIDTH / this.zoom;
 	this.rect.height = config.HEIGHT / this.zoom;
 	
-	scene_size = this.scene.view.getSize();
+	//The camera's extent cannot be bigger than the current scene's size
+	if (this.rect.width > scene_size[0]) {this.rect.width = scene_size[0];}
+	if (this.rect.height > scene_size[1]) {this.rect.height = scene_size[1];}
 	
 	//The camera cannot pan beyond the extents of the scene
 	if (this.rect.top < 0) {this.rect.top = 0;}
@@ -53,17 +57,13 @@ Camera.prototype.update = function(msDuration) {
 	if (this.rect.bottom > scene_size[1]) {this.rect.bottom = scene_size[1];}
 	if (this.rect.right > scene_size[0]) {this.rect.right = scene_size[0];}
 	
-	//The camera's extent cannot be bigger than the current scene's size
-	if (this.rect.width > scene_size[0]) {this.rect.width = scene_size[0];}
-	if (this.rect.height > scene_size[1]) {this.rect.height = scene_size[1];}
+	this.view = new gamejs.Surface(this.rect.width, this.rect.height);
+	this.view.blit(this.scene.view, [0,0], this.rect);
 	
-	view = new gamejs.Surface(this.rect);
-	view.blit(this.scene.view, [0,0], this.rect);
-	
-	this.display = gamejs.transform.scale(view, [
+	this.display = gamejs.transform.scale(this.view, [
 		this.rect.width * this.zoom,
 		this.rect.height * this.zoom]);
-		
+	//this.display = view;
 	return;
 }
 

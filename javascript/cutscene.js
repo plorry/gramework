@@ -1,4 +1,4 @@
-var config = require('./config');
+var config = require('./project/config');
 var gamejs = require('gamejs');
 
 var Cutscene = exports.Cutscene = function(director, cutsceneId) {

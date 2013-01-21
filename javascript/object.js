@@ -1,5 +1,5 @@
 var gamejs = require('gamejs');
-var config = require('./config');
+var config = require('./project/config');
 var draw = require('gamejs/draw');
 var objects = require('gamejs/utils/objects');
 var Animation = require('/animate').Animation;
@@ -17,6 +17,16 @@ var Object = exports.Object = function(pos, spriteSheet, animation) {
 		this.height = 15;
 	}
 	this.rect = new gamejs.Rect(pos, [this.width, this.height]);
+	this.realRect = new gamejs.Rect(this.rect);
+	
+	this.lookingRight = false;
+	this.lookingAt = null;
+	
+	this.movingRight = false;
+	this.movingLeft = false;
+	this.movingUp = false;
+	this.movingDown = false;
+	
     this.x_speed = 0;
     this.y_speed = 0;
     this.x_accel = 0;
@@ -51,7 +61,9 @@ Object.prototype.update = function(msDuration) {
     this.y_speed += this.y_accel;    
     this.x_speed += this.x_accel;
 	
-	this.rect.moveIp(this.x_speed, this.y_speed);
+	this.realRect.moveIp(this.x_speed, this.y_speed);
+	this.rect.top = Math.round(this.realRect.top);
+	this.rect.left = Math.round(this.realRect.left);
     
     if (this.y_speed <= 0) {
         this.is_falling = false;
@@ -62,6 +74,19 @@ Object.prototype.update = function(msDuration) {
 	if (this.animation) {
 		this.animation.update(msDuration);
 		this.image = this.animation.image;
+	}
+	
+	if (this.image) {
+		if (this.lookingAt) {
+			if (this.lookingAt.rect.center[0] > this.rect.center[0]) {
+				this.lookingRight = true;
+			} else {
+				this.lookingRight = false;
+			}
+		}
+		if (this.lookingRight) {
+			this.image = gamejs.transform.flip(this.image, true, false);
+		}
 	}
 	return;
 };
@@ -116,31 +141,162 @@ var defaultMapping = {
 	'BUTTON2': gamejs.event.K_SHIFT
 };
 
-var FourDirection = exports.FourDirection = function(pos, spriteSheet, animation, playerControlled, controlMapping) {
+/*
+FOUR-DIRECTION OBJECT
+An object, player-controlled or NPC, moving on a 2-dimensional plane
+*/
+
+var FourDirection = exports.FourDirection = function(pos, spriteSheet, animation, playerControlled, controlMapping, walkSpeed) {
 	FourDirection.superConstructor.apply(this, arguments);
-	this.playerContolled = playerControlled || null;
+	this._groups = [];
+	this.playerControlled = playerControlled || false;
 	this.controlMapping = controlMapping || defaultMapping;
+	this.walkSpeed = walkSpeed || 2;
+	this.xMultiplier = 1;
+	this.yMultiplier = 1;
+	this.dest = null;
+	this.choiceCounter = 0;
 };
 objects.extend(FourDirection, Object);
+
+FourDirection.prototype.stop = function() {
+	this.x_speed = 0;
+	this.y_speed = 0;
+	this.movingLeft = false;
+	this.movingRight = false;
+	this.movingUp = false;
+	this.movingDown = false;
+	this.dest = null;
+	return;
+};
+
+FourDirection.prototype.lookAt = function(obj) {
+	this.lookingAt = obj;
+}
+
+FourDirection.prototype.update = function(msDuration) {
+	Object.prototype.update.apply(this, arguments);
+	
+	if (!this.playerControlled) {
+		this.choiceCounter++;
+	}
+	
+	//Get to the destination
+	if (this.dest){
+		if (this.realRect.center[0] < this.dest[0]) {
+			this.movingLeft = false;
+			this.movingRight = true;
+		}
+		if (this.realRect.center[0] > this.dest[0]) {
+			this.movingRight = false;
+			this.movingLeft = true;
+		}
+		if (this.realRect.center[1] > this.dest[1]) {
+			this.movingDown = false;
+			this.movingUp = true;
+		}
+		if (this.realRect.center[1] < this.dest[1]) {
+			this.movingUp = false;
+			this.movingDown = true;
+		}
+		var xClose = (this.realRect.center[0] > this.dest[0] - this.walkSpeed
+			&& this.realRect.center[0] < this.dest[0] + this.walkSpeed);
+		var yClose = (this.realRect.center[1] > this.dest[1] - this.walkSpeed
+			&& this.realRect.center[1] < this.dest[1] + this.walkSpeed);
+		if (xClose) {
+			this.movingRight = false;
+			this.movingLeft = false;
+			this.xSpeed = 0;
+		}
+		if (yClose) {
+			this.movingUp = false;
+			this.movingDown = false;
+			this.ySpeed = 0;
+		}
+		if (xClose && yClose) {
+			this.stop();
+		}
+	}
+	
+	if (this.movingRight) {
+		this.movingLeft = false;
+		this.x_speed = this.walkSpeed * this.xMultiplier;
+	}
+	if (this.movingLeft) {
+		this.movingRight = false;
+		this.x_speed = -this.walkSpeed * this.xMultiplier;
+	}
+	if (this.movingUp) {
+		this.movingDown = false;
+		this.y_speed = -this.walkSpeed * this.yMultiplier;
+	}
+	if (this.movingDown) {
+		this.movingUp = false;
+		this.y_speed = this.walkSpeed * this.yMultiplier;
+	}
+	if (!this.movingRight && !this.movingLeft) {
+		this.x_speed = 0;
+	}
+	if (!this.movingUp && !this.movingDown) {
+		this.y_speed = 0;
+	}
+	
+	if (this.choiceCounter == 200) {
+		xPos = Math.floor((Math.random() * 100) + 1);
+		yPos = Math.floor((Math.random() * 100) + 1);
+		this.goTo([xPos, yPos]);
+		this.choiceCounter = 0;
+	}
+};
+
+FourDirection.prototype.goTo = function(pos) {
+	this.dest = pos;
+};
 
 FourDirection.prototype.handleEvent = function(event) {
 	if (event.type === gamejs.event.KEY_DOWN) {
 		switch (event.key) {
-			case this.controlMapping['LEFT']:
-				console.log('left');
-				this.x_speed = -2;
+			case this.controlMapping.LEFT:
+				this.movingLeft = true;
+				this.lookingRight = false;
+				this.movingRight = false;
+				this.yMultiplier = 0.707;
 				break;
-			case this.controlMapping['RIGHT']:
-			console.log('right');
-				this.x_speed = 2;
+			case this.controlMapping.RIGHT:
+				this.movingRight = true;
+				this.lookingRight = true;
+				this.movingLeft = false;
+				this.yMultiplier = 0.707;
+				break;
+			case this.controlMapping.UP:
+				this.movingUp = true;
+				this.movingDown = false;
+				this.xMultiplier = 0.707;
+				break;
+			case this.controlMapping.DOWN:
+				this.movingDown = true;
+				this.movingUp = false;
+				this.xMultiplier = 0.707;
 				break;
 		}
 	} else if (event.type === gamejs.event.KEY_UP) {
 		switch (event.key) {
-			case this.controlMapping['LEFT']:
-			case this.controlMapping['RIGHT']:
-				this.x_speed = 0;
-				break;			
+			case this.controlMapping.LEFT:
+				this.movingLeft = false;
+				this.yMultiplier = 1;
+				break;
+			case this.controlMapping.RIGHT:
+				this.movingRight = false;
+				this.yMultiplier = 1;
+				break;
+			case this.controlMapping.UP:
+				this.movingUp = false;
+				this.xMultiplier = 1;
+				break;
+			case this.controlMapping.DOWN:
+				this.movingDown = false;
+				this.xMultiplier = 1;
+				break;
 		}
 	}
 };
