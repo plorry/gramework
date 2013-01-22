@@ -43,6 +43,7 @@ Scene.prototype.draw = function(display) {
 
 	display.blit(this.camera.draw());
 	this.uiElements.draw(display);
+	
 	return;
 };
 
@@ -73,7 +74,11 @@ Scene.prototype.update = function(msDuration) {
 	this.objects_list._sprites.sort(order);
 	this.objects_list.update(msDuration);
 	this.camera.update(msDuration);
-	this.uiElements.update(msDuration);
+	this.uiElements.forEach(function(element){
+		if (element.active) {
+			element.update(msDuration);
+		}
+	});
 	return;
 };
 

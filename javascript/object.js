@@ -35,7 +35,7 @@ var Object = exports.Object = function(pos, spriteSheet, animation) {
     this.bounce = 0.8;
     
 	if (animation) {
-		this.animation = new Animation(spriteSheet, animation, 12);
+		this.animation = new Animation(spriteSheet, animation, 20);
 		this.animation.start('static');
 	}
 	
@@ -92,6 +92,10 @@ Object.prototype.update = function(msDuration) {
 			this.image = gamejs.transform.flip(this.image, true, false);
 		}
 	}
+	return;
+};
+
+Object.prototype.arcTo = function(dest) {
 	return;
 };
 
@@ -214,6 +218,16 @@ FourDirection.prototype.update = function(msDuration) {
 	}
 	if (!this.movingUp && !this.movingDown) {
 		this.y_speed = 0;
+	}
+	
+	if (this.animation.spec['walking']){
+		if ((this.movingUp || this.movingDown || this.movingRight || this.movingLeft) && this.animation.currentAnimation == 'static') {
+			this.animation.start('walking');
+		}
+	}
+	
+	if (!this.movingUp && !this.movingDown && !this.movingLeft && !this.movingRight) {
+		this.animation.start('static');
 	}
 	
 	if (this.choiceCounter == 200) {

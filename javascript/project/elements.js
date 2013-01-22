@@ -24,7 +24,8 @@ var getSprites = exports.getSprites = function() {
 	var peter_dims = {width:14, height: 24};
 	var peter_sheet = new SpriteSheet(peter_file, peter_dims);
 	var peter_anims = {
-		'static': [0]
+		'static': [0],
+		'walking': [0,3],
 	};
 	peter = new FourDirection([0,0], peter_sheet, peter_anims, true);
 	peter_2 = new FourDirection([40,40], peter_sheet, peter_anims, true, p2_controls);

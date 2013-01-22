@@ -28,6 +28,7 @@
         }
     </style>
 <!-- Start javascript/main.js -->
+	<script src="./javascript/public/canvasquery.min.js"></script>
     <script src="./javascript/public/yabble.js"></script>
     <script src="./javascript/public/gamejs.min.js"></script>
     <script>
@@ -38,11 +39,12 @@
 <!-- Html -->
 <body>
 	<div style='display:none; font-family:Ebit'>Hi</div>
-    <div>
+    <div id='gjs-container'>
         <div id="gjs-loader">
          Loading...
         </div>
         <canvas id="gjs-canvas"></canvas>
+		<canvas id="scaled"></canvas>
 
     </div>
 </body>

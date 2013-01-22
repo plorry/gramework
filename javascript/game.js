@@ -12,7 +12,12 @@ exports.Director = function() {
 			currentScene.handleEvent(event);
 		});
 		currentScene.update(msDuration);
+		//console.log(display);
 		currentScene.draw(display);
+		
+		var canv = document.getElementById("gjs-canvas");
+		//cq(canv).blend("#000000", "hardLight", 0.8);
+		
 		return;
 	};
 
@@ -31,7 +36,7 @@ exports.Director = function() {
     };
 
     var display = gamejs.display.setMode([config.WIDTH, config.HEIGHT]);
-    //gamejs.transform.scale(display, [config.WIDTH * config.SCALE, config.HEIGHT * config.SCALE]);
+	
     gamejs.time.fpsCallback(tick, this, 60);
     return this;
 
