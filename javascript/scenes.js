@@ -1,28 +1,21 @@
 var gamejs = require('gamejs');
-var draw = require('gamejs/draw');
 var config = require('./project/config');
-var draw = require('gamejs/draw');
-var Object = require('./object').Object;
-var FourDirection = require('./object').FourDirection;
 var Camera = require('./camera').Camera;
-var SpriteSheet = require('./animate').SpriteSheet;
-var Animation = require('./animate').Animation;
 var elements = require('./project/elements');
+var uiElements = require('./project/uiElements');
 
 var font = new gamejs.font.Font('20px Lucida Console');
-
-var sounds = {
-
-};
 
 //Scene Class
 
 var Scene = exports.Scene = function(director, sceneConfig) {
-	 
 	this.objects_list = new gamejs.sprite.Group();
 	this.player_objects = new gamejs.sprite.Group();
+	this.uiElements = new gamejs.sprite.Group();
 	this.objects_list.add(elements.getSprites());
 	this.player_objects.add(elements.getPlayers());
+	console.log(this.uiElements);
+	this.uiElements.add(uiElements.getElements());
     this.view = new gamejs.Surface([800, 600]);
 	this.camera = new Camera(this);
 
@@ -49,6 +42,8 @@ Scene.prototype.draw = function(display) {
 	this.objects_list.draw(this.view);
 
 	display.blit(this.camera.draw());
+	this.uiElements.draw(display);
+	return;
 };
 
 Scene.prototype.handleEvent = function(event) {
@@ -67,7 +62,6 @@ Scene.prototype.handleEvent = function(event) {
 			this.camera.zoomTo(1);
 		}
 	}
-	
 	return;
 };
 
@@ -79,6 +73,7 @@ Scene.prototype.update = function(msDuration) {
 	this.objects_list._sprites.sort(order);
 	this.objects_list.update(msDuration);
 	this.camera.update(msDuration);
+	this.uiElements.update(msDuration);
 	return;
 };
 
