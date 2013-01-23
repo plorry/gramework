@@ -100,11 +100,18 @@ Object.prototype.arcTo = function(dest) {
 };
 
 Object.prototype.draw = function(display) {
+	this.image._context.webkitImageSmoothingEnabled = false;
+	
 	if (this.spriteSheet) {	
 		gamejs.sprite.Sprite.prototype.draw.apply(this, arguments);
 	} else {
 		draw.rect(display, "#000FFF", new gamejs.Rect(this.pos, [5,5]));
 	}
+	
+	if (config.DEBUG) {
+		draw.rect(display, "#000FFF", this.rect, 3);
+	}
+	
 	return;
 };
 
@@ -242,6 +249,10 @@ FourDirection.prototype.goTo = function(pos) {
 	this.dest = pos;
 };
 
+FourDirection.prototype.action1 = function() {
+	return;
+}
+
 FourDirection.prototype.handleEvent = function(event) {
 	if (event.type === gamejs.event.KEY_DOWN) {
 		switch (event.key) {
@@ -251,22 +262,28 @@ FourDirection.prototype.handleEvent = function(event) {
 				this.movingRight = false;
 				this.yMultiplier = 0.707;
 				break;
+				
 			case this.controlMapping.RIGHT:
 				this.movingRight = true;
 				this.lookingRight = true;
 				this.movingLeft = false;
 				this.yMultiplier = 0.707;
 				break;
+				
 			case this.controlMapping.UP:
 				this.movingUp = true;
 				this.movingDown = false;
 				this.xMultiplier = 0.707;
 				break;
+				
 			case this.controlMapping.DOWN:
 				this.movingDown = true;
 				this.movingUp = false;
 				this.xMultiplier = 0.707;
 				break;
+				
+			case this.controlMapping.BUTTON1:
+				this.action1();
 		}
 	} else if (event.type === gamejs.event.KEY_UP) {
 		switch (event.key) {

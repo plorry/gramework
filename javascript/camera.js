@@ -67,12 +67,14 @@ Camera.prototype.update = function(msDuration) {
 	if (this.rect.right > scene_size[0]) {this.rect.right = scene_size[0];}
 	
 	this.view = new gamejs.Surface(scene_size);
+	this.view._context.webkitImageSmoothingEnabled = false;
 	
 	this.view.blit(this.scene.view, [0,0], this.rect);
 	
 	this.display = gamejs.transform.scale(this.view, [
 		this.rect.width * this.zoom,
 		this.rect.height * this.zoom]);
+	this.display._context.webkitImageSmoothingEnabled = false;
 	return;
 }
 

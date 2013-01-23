@@ -17,13 +17,14 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 	console.log(this.uiElements);
 	this.uiElements.add(uiElements.getElements());
     this.view = new gamejs.Surface([800, 600]);
+	this.view._context.webkitImageSmoothingEnabled = false;
 	this.camera = new Camera(this);
 
 	var sceneId = sceneId || 0;
 	var elapsed = 0;
 	this.image = null;
 	this.initScene(sceneConfig);
-	
+		
 	this.camera.follow(peter);
 	
 	return this;
@@ -31,6 +32,7 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 
 Scene.prototype.initScene = function(sceneConfig) {
 	this.image = gamejs.image.load(sceneConfig.image);
+	this.image._context.webkitImageSmoothingEnabled = false;
 	return;
 };
 
@@ -40,9 +42,17 @@ Scene.prototype.draw = function(display) {
 		this.view.blit(this.image);
 	}
 	this.objects_list.draw(this.view);
-
-	display.blit(this.camera.draw());
-	this.uiElements.draw(display);
+	
+	var screen = this.camera.draw();
+	this.uiElements.draw(screen);
+	screen._context.webkitImageSmoothingEnabled = false;
+	
+	var size = screen.getSize();
+	
+	var scaledScreen = gamejs.transform.scale(screen, [size[0] * config.SCALE, size[1] * config.SCALE]);
+	scaledScreen._context.webkitImageSmoothingEnabled = false;
+	
+	display.blit(scaledScreen);
 	
 	return;
 };
@@ -56,6 +66,7 @@ Scene.prototype.handleEvent = function(event) {
 		if (event.key === gamejs.event.K_SPACE) {
 			//LOG STUFF HERE
 			this.camera.zoomTo(2);
+			console.log('1');
 		}
 	}
 	if (event.type === gamejs.event.KEY_UP) {

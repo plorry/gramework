@@ -35,7 +35,12 @@ exports.Director = function() {
         return currentScene;
     };
 
-    var display = gamejs.display.setMode([config.WIDTH, config.HEIGHT]);
+    var display = gamejs.display.setMode([config.WIDTH * config.SCALE, config.HEIGHT * config.SCALE]);
+    //var display = gamejs.display.setMode([config.WIDTH, config.HEIGHT]);
+	display._context.webkitImageSmoothingEnabled = false;
+	if (config.DEBUG) {
+		console.log('DEBUG');
+	}
 	
     gamejs.time.fpsCallback(tick, this, 60);
     return this;

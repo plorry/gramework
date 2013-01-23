@@ -44,8 +44,22 @@
          Loading...
         </div>
         <canvas id="gjs-canvas"></canvas>
-		<canvas id="scaled"></canvas>
 
     </div>
+	<script type='text/javascript'>
+	var canv = document.getElementById('gjs-canvas');
+		function fullscreen() {
+			var el = document.getElementById('gjs-canvas');
+	 
+			   if(el.webkitRequestFullScreen) {
+				   el.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+			   }
+			  else {
+				 el.mozRequestFullScreen();
+			  }  
+		}
+		
+		canv.addEventListener("click",fullscreen)
+	</script>
 </body>
 </html>

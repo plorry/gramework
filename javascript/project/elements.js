@@ -3,6 +3,7 @@ var config = require('./config');
 var FourDirection = require('../object').FourDirection;
 var Animation = require('../animate').Animation;
 var SpriteSheet = require('../animate').SpriteSheet;
+var extendShooter = require('./extendSprites').extendShooter;
 
 /*
 Here is where we'll generate all the sprites to be used in the game
@@ -19,6 +20,8 @@ var p2_controls = {
 
 var getSprites = exports.getSprites = function() {
 	var sprites = [];
+	//Specifically turn our 4D objects into shooters
+	extendShooter(FourDirection);
 
 	var peter_file = config.STATIC_PATH + 'images/sprites/peter.png';
 	var peter_dims = {width:14, height: 24};
