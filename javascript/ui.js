@@ -54,6 +54,7 @@ Element.prototype.update = function(msDuration) {
 	if (this.animation) {
 		this.animation.update(msDuration);
 		this.image = this.animation.image;
+		this.image._context.webkitImageSmoothingEnabled = false;
 	}
 	return;
 };
@@ -96,8 +97,10 @@ TextArea.prototype.update = function(msDuration) {
 TextArea.prototype.draw = function(display) {
 	this.textSurface.fill(this.background);
 	this.textSurface.setAlpha(0.35);
+	this.textSurface._context.webkitImageSmoothingEnabled = false;
 	display.blit(this.textSurface, this.pos);
 	this.fontSurface = font.render(this.currentText, this.color);
+	this.fontSurface._context.webkitImageSmoothingEnabled = false;
 	display.blit(this.fontSurface, this.pos);
 	return;
 };

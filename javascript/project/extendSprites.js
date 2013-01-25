@@ -41,26 +41,38 @@ var extendShooter = exports.extendShooter = function(obj) {
 		
 	obj.prototype.range = 110;
 	obj.prototype.shots = [];
+	obj.prototype._canShoot = true;
+	obj.prototype._isShooting = false;
+	obj.prototype.canShoot = function() {
+		return this._canShoot;
+	};
+	obj.prototype.isShooting = function() {
+		return this._isShooting;
+	};
 	
 	obj.prototype.action1 = function() {
 		var _name = "shoot";
-		sounds.shoot();
-		
-		if (this.lookingRight) {
-			var xPointB = this.rect.center[0] + this.range;
-		} else {
-			var xPointB = this.rect.center[0] - this.range;
+		if (this.canShoot()) {
+			this._isShooting = true;
+			this._canShoot = false;
+			sounds.shoot();
+			
+			if (this.lookingRight) {
+				var xPointB = this.rect.center[0] + this.range;
+			} else {
+				var xPointB = this.rect.center[0] - this.range;
+			}
+			
+			var pointA =  this.rect.center;
+			var pointB = [xPointB, this.rect.center[1]];
+			
+			var shot = new Line(pointA, pointB, this);
+			this.shots.push(shot);
+			
+			this.getName = function() {
+				return _name;
+			};
 		}
-		
-		var pointA =  this.rect.center;
-		var pointB = [xPointB, this.rect.center[1]];
-		
-		var shot = new Line(pointA, pointB, this);
-		this.shots.push(shot);
-		
-		this.getName = function() {
-			return _name;
-		};
 	};
 	
 	//Extend the original update function

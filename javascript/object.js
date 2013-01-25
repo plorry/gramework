@@ -3,6 +3,7 @@ var config = require('./project/config');
 var draw = require('gamejs/draw');
 var objects = require('gamejs/utils/objects');
 var Animation = require('/animate').Animation;
+var palettes = require('./palettes').palettes;
 
 var GRAVITY = 9.8;
 
@@ -19,6 +20,8 @@ var Object = exports.Object = function(pos, spriteSheet, animation) {
 	this.rect = new gamejs.Rect(pos, [this.width, this.height]);
 	this.realRect = new gamejs.Rect(this.rect);
 	
+	this.scene = null;
+	
 	this.lookingRight = false;
 	this.lookingAt = null;
 	
@@ -33,6 +36,8 @@ var Object = exports.Object = function(pos, spriteSheet, animation) {
     this.y_accel = 0;
     this.y_max = 10;
     this.bounce = 0.8;
+	
+	this.count = 0;
     
 	if (animation) {
 		this.animation = new Animation(spriteSheet, animation, 20);
@@ -50,6 +55,10 @@ var Object = exports.Object = function(pos, spriteSheet, animation) {
     return this;
 };
 objects.extend(Object, gamejs.sprite.Sprite);
+
+Object.prototype.setScene = function(scene) {
+	this.scene = scene;
+};
 
 Object.prototype.update = function(msDuration) {
 	this.x_accel = 0;
@@ -155,7 +164,8 @@ FourDirection.prototype.stop = function() {
 
 FourDirection.prototype.lookAt = function(obj) {
 	this.lookingAt = obj;
-}
+	return;
+};
 
 FourDirection.prototype.update = function(msDuration) {
 	Object.prototype.update.apply(this, arguments);

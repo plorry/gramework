@@ -79,6 +79,7 @@ Camera.prototype.update = function(msDuration) {
 }
 
 Camera.prototype.draw = function() {
+	this.display._context.webkitImageSmoothingEnabled = false;
 	return this.display;
 };
 
@@ -88,6 +89,10 @@ Camera.prototype.panto = function(pos) {
 
 Camera.prototype.follow = function(obj) {
 	this.center = obj;
+};
+
+Camera.prototype.unfollow = function() {
+	this.center = null;
 };
 
 Camera.prototype.zoomTo = function(zoom) {

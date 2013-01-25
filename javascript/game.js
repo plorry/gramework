@@ -12,11 +12,12 @@ exports.Director = function() {
 			currentScene.handleEvent(event);
 		});
 		currentScene.update(msDuration);
-		//console.log(display);
+		display._context.webkitImageSmoothingEnabled = false;
 		currentScene.draw(display);
+		display._context.webkitImageSmoothingEnabled = false;
 		
 		var canv = document.getElementById("gjs-canvas");
-		//cq(canv).blend("#000000", "hardLight", 0.8);
+		//cq(canv).matchPalette(SIMPLE);
 		
 		return;
 	};
@@ -44,5 +45,4 @@ exports.Director = function() {
 	
     gamejs.time.fpsCallback(tick, this, 60);
     return this;
-
 };

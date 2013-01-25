@@ -9,6 +9,11 @@ exports.STATIC_PATH = '../static/';
 
 exports.SCALE = 2;
 
-exports.scenes = [
-	{'image': exports.STATIC_PATH + 'images/backgrounds/background1.jpg'}
-];
+var triggers = require('./triggerElements').triggers;
+
+exports.scenes = {
+	'debug': {
+		'image': exports.STATIC_PATH + 'images/backgrounds/background1.jpg',
+		'triggers': [triggers.testTrigger]
+	}
+};
