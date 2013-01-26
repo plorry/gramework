@@ -18,7 +18,7 @@ var images = [
 	config.STATIC_PATH + 'images/sprites/enemy-suit01.png',
 	config.STATIC_PATH + 'images/sprites/enemy-suit02.png',
 	config.STATIC_PATH + 'images/sprites/shot.png',
-	config.STATIC_PATH + 'images/backgrounds/office-boardroom.png'
+	'./static/images/backgrounds/office-boardroom.png'
 ];
 
 var resources = exports.resources = sounds.concat(images);

@@ -13,7 +13,7 @@ var triggers = require('./triggerElements').triggers;
 
 exports.scenes = {
 	'debug': {
-		'image': exports.STATIC_PATH + 'images/backgrounds/background1.jpg',
+		'image': './static/images/backgrounds/office-boardroom.png',
 		'triggers': [triggers.testTrigger]
 	}
 };
