@@ -20,6 +20,7 @@ var p2_controls = {
 var dims = {width:16, height:20};
 
 var thug_file = config.STATIC_PATH + 'images/sprites/enemy-suit01.png';
+var thug2_file = config.STATIC_PATH + 'images/sprites/enemy-suit02.png';
 var shot_file = config.STATIC_PATH + 'images/sprites/shot.png';
 var woo_file = config.STATIC_PATH + 'images/sprites/john-woo.png';
 var chow_file = config.STATIC_PATH + 'images/sprites/chow-yun-fat.png';
@@ -56,7 +57,7 @@ var woo_opts = {
 };
 
 var spawnShot = exports.spawnShot = function(obj) {
-	shot = new Throwaway(obj.hotspot, shot_opts);
+	shot = new Throwaway(obj.hotspot, shot_opts, obj);
 	shot.setScene(obj.scene);
 	obj.scene.objects_list.add(shot);
 	shot.lookingRight = !(obj.lookingRight);
@@ -67,16 +68,16 @@ var getSprites = exports.getSprites = function() {
 	//Specifically turn our 4D objects into shooters
 	extendShooter(FourDirection);
 	
-	woo = new FourDirection([0,0], woo_opts);
+	woo = new FourDirection([0,90], woo_opts);
 	
 	var chow_opts = woo_opts;
 	chow_opts.controlMapping = p2_controls;
 	chow_opts.spriteSheet = [chow_file, dims];
 	
-	chow = new FourDirection([35,35], chow_opts);
+	chow = new FourDirection([35,110], chow_opts);
 		
-	thug = new FourDirection([15,15], thug_opts);
-	thug_2 = new FourDirection([35,35], thug_opts);
+	thug = new FourDirection([15,120], thug_opts);
+	thug_2 = new FourDirection([35,130], thug_opts);
 	
 	thug.lookAt(woo);
 	thug_2.lookAt(woo);

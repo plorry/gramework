@@ -123,6 +123,11 @@ Scene.prototype.spawn = function(obj, pos, options) {
 	return;
 };
 
+Scene.prototype.spawn_many = function(obj, num, lvl) {
+	
+	return;
+};
+
 var order = function(a,b) {
 	return a.rect.top-b.rect.top;
 };
