@@ -3,7 +3,7 @@ var config = require('./config');
 
 var sounds = [
 	config.STATIC_PATH + 'sounds/pulse_low.wav',
-	config.STATIC_PATH + 'sounds/gunshot.wav',
+	config.STATIC_PATH + 'sounds/gunshot.wav'
 ];
 
 var images = [

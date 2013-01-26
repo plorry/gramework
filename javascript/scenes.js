@@ -2,7 +2,7 @@ var gamejs = require('gamejs');
 var config = require('./project/config');
 var Camera = require('./camera').Camera;
 var elements = require('./project/elements');
-var Map = require('./maps').Map;
+//var Map = require('./maps').Map;
 var uiElements = require('./project/uiElements');
 var soundElements = require('./project/soundElements');
 
@@ -34,7 +34,7 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 Scene.prototype.initScene = function(sceneConfig) {
 	this.image = gamejs.image.load(sceneConfig.image);
 	if (this.image) this.image._context.webkitImageSmoothingEnabled = false;
-	this.triggers = triggers = sceneConfig.triggers || [];
+	this.triggers = triggers = [];
 	var imageSize = this.image.getSize();
 	this.view = new gamejs.Surface([imageSize[0], 224]);
 
@@ -46,7 +46,7 @@ Scene.prototype.initScene = function(sceneConfig) {
 	
 	// setup the scene
 	// this.mapfile = sceneConfig.map || [];
-	//this.map = new Map('../static/maps/boardroom.tmx');
+	// this.map = new Map('../static/maps/boardroom.tmx');
 
 	var scene = this;
 	this.objects_list.forEach(function(object) {
@@ -76,7 +76,7 @@ Scene.prototype.draw = function(display) {
 		this.view.blit(this.image);
 	}
 
-	this.map.draw(this.view);
+	// this.map.draw(this.view);
 
 	this.objects_list.draw(this.view);
 	
@@ -137,6 +137,7 @@ Scene.prototype.update = function(msDuration) {
 		if (trigger.condition(scene)) {
 			trigger.activate();
 		}
+		globaltrigger = trigger;
 		if (trigger.isActive()){
 			trigger.update(msDuration, scene);
 		}
@@ -147,7 +148,7 @@ Scene.prototype.update = function(msDuration) {
 		}
 	});
 
-	this.map.update(msDuration);
+	// this.map.update(msDuration);
 	
 	this.objects_list._sprites.sort(order);
 	if (!this.isFrozen()){

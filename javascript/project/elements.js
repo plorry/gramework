@@ -91,8 +91,8 @@ var getSprites = exports.getSprites = function() {
 	// };
 	// doors = new Object([100,0], doors_sheet, doors_anims);
 	
-	sprites.push(peter);
-	sprites.push(peter_2);
+	sprites.push(woo);
+	sprites.push(chow);
 	sprites.push(thug);
 	sprites.push(thug_2);
 	// sprites.push(doors);
