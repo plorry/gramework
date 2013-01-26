@@ -7,17 +7,17 @@ var palettes = require('./palettes').palettes;
 
 var GRAVITY = 9.8;
 
-var Object = exports.Object = function(pos, spriteSheet, animation) {
+var Object = exports.Object = function(pos, options) {
     this.pos = pos || [0,0];
-	this.spriteSheet = spriteSheet || null;
-	if (spriteSheet) {
-		this.width = spriteSheet.width;
-		this.height = spriteSheet.height;
+	this.spriteSheet = options.spriteSheet || null;
+	if (this.spriteSheet) {
+		this.width = this.spriteSheet.width;
+		this.height = this.spriteSheet.height;
 	} else {
 		this.width = 15;
 		this.height = 15;
 	}
-	this.rect = new gamejs.Rect(pos, [this.width, this.height]);
+	this.rect = new gamejs.Rect(this.pos, [this.width, this.height]);
 	this.realRect = new gamejs.Rect(this.rect);
 	
 	this.scene = null;
@@ -39,8 +39,8 @@ var Object = exports.Object = function(pos, spriteSheet, animation) {
 	
 	this.count = 0;
     
-	if (animation) {
-		this.animation = new Animation(spriteSheet, animation, 20);
+	if (options.animation) {
+		this.animation = new Animation(this.spriteSheet, options.animation, 20);
 		this.animation.start('static');
 	}
 	
@@ -110,6 +110,7 @@ Object.prototype.arcTo = function(dest) {
 
 Object.prototype.draw = function(display) {
 	this.image._context.webkitImageSmoothingEnabled = false;
+	//cq(this.image._canvas).matchPalette(palettes.simple);
 	
 	if (this.spriteSheet) {	
 		gamejs.sprite.Sprite.prototype.draw.apply(this, arguments);
@@ -138,12 +139,12 @@ FOUR-DIRECTION OBJECT
 An object, player-controlled or NPC, moving on a 2-dimensional plane
 */
 
-var FourDirection = exports.FourDirection = function(pos, spriteSheet, animation, playerControlled, controlMapping, walkSpeed) {
+var FourDirection = exports.FourDirection = function(pos, options) {
 	FourDirection.superConstructor.apply(this, arguments);
 	this._groups = [];
-	this.playerControlled = playerControlled || false;
-	this.controlMapping = controlMapping || defaultMapping;
-	this.walkSpeed = walkSpeed || 2;
+	this.playerControlled = options.playerControlled || false;
+	this.controlMapping = options.controlMapping || defaultMapping;
+	this.walkSpeed = options.walkSpeed || 2;
 	this.xMultiplier = 1;
 	this.yMultiplier = 1;
 	this.dest = null;

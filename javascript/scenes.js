@@ -100,6 +100,11 @@ Scene.prototype.handleEvent = function(event) {
 	return;
 };
 
+Scene.prototype.spawn = function(obj, options) {
+	this.objects_list.add(new obj(options));
+	return;
+};
+
 var order = function(a,b) {
 	return a.rect.top-b.rect.top;
 };
@@ -117,15 +122,17 @@ Scene.prototype.update = function(msDuration) {
 		if (trigger.isActive()){
 			trigger.update(msDuration, scene);
 		}
-		/*
 		if (trigger.killCondition(scene)) {
+			trigger.killEvent();
+			trigger.deactivate();
 			scene.triggers.splice(index,1);
 		}
-		*/
 	});
 	
 	this.objects_list._sprites.sort(order);
-	this.objects_list.update(msDuration);
+	if (!this.isFrozen()){
+		this.objects_list.update(msDuration);
+	}
 	this.camera.update(msDuration);
 	this.uiElements.forEach(function(element){
 		if (element.active) {
@@ -140,6 +147,8 @@ var Trigger = exports.Trigger = function(options) {
 	this._active = false;
 	this.condition = options.condition;
 	this.update = options.update || function() {return;};
+	this.killCondition = options.killCondition || function() {return false;};
+	this.killEvent = options.killEvent || function() {return;};
 	return this;
 };
 
@@ -152,6 +161,7 @@ Trigger.prototype.isActive = function() {
 	return this._active;
 };
 
-Trigger.prototype.kill = function() {
-	return this._kill;
+Trigger.prototype.deactivate = function() {
+	this._active = false;
+	return;
 };
