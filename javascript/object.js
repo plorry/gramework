@@ -2,15 +2,17 @@ var gamejs = require('gamejs');
 var config = require('./project/config');
 var draw = require('gamejs/draw');
 var objects = require('gamejs/utils/objects');
+var SpriteSheet = require('./animate').SpriteSheet;
 var Animation = require('/animate').Animation;
 var palettes = require('./palettes').palettes;
 
 var GRAVITY = 9.8;
 
 var Object = exports.Object = function(pos, options) {
+	
 	this._groups = [];
-  this.pos = pos || [0,0];
-	this.spriteSheet = options.spriteSheet || null;
+	this.pos = pos || [0,0];
+	this.spriteSheet = new SpriteSheet(options.spriteSheet[0], options.spriteSheet[1]) || null;
 	if (this.spriteSheet) {
 		this.width = this.spriteSheet.width;
 		this.height = this.spriteSheet.height;
@@ -20,6 +22,7 @@ var Object = exports.Object = function(pos, options) {
 	}
 	this.rect = new gamejs.Rect(this.pos, [this.width, this.height]);
 	this.realRect = new gamejs.Rect(this.rect);
+	this.collisionRect = new gamejs.Rect([this.rect.left+1, this.rect.top+1],[this.rect.width-2, this.rect.height-2]);
 	
 	this.scene = null;
 	
@@ -64,6 +67,7 @@ Object.prototype.setScene = function(scene) {
 Object.prototype.update = function(msDuration) {
 	this.x_accel = 0;
     this.y_accel = 0;
+
     for (var i = 0; i < this.behaviours.length; i++) {
         this.behaviours[i].update(this);
     }
@@ -102,6 +106,8 @@ Object.prototype.update = function(msDuration) {
 			this.image = gamejs.transform.flip(this.image, true, false);
 		}
 	}
+	
+	this.collisionRect = new gamejs.Rect([this.rect.left+2, this.rect.top+2],[this.rect.width-4, this.rect.height-4]);
 	return;
 };
 
@@ -120,10 +126,15 @@ Object.prototype.draw = function(display) {
 	}
 	
 	if (config.DEBUG) {
-		draw.rect(display, "#000FFF", this.rect, 3);
+		draw.rect(display, "#000FFF", this.collisionRect, 3);
 	}
 	
 	return;
+};
+
+Object.prototype.die = function() {
+	var index = this.scene.objects_list.remove(this);
+	var index = this.scene.npc_list.remove(this);
 };
 
 var defaultMapping = {
@@ -150,6 +161,7 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 	this.yMultiplier = 1;
 	this.dest = null;
 	this.choiceCounter = 0;
+	this.boundaryRect = null;
 };
 objects.extend(FourDirection, Object);
 
@@ -164,6 +176,16 @@ FourDirection.prototype.stop = function() {
 	return;
 };
 
+FourDirection.prototype.setBoundary = function(rect) {
+	this.boundaryRect = rect;
+	return;
+};
+
+FourDirection.prototype.clearBoundary = function() {
+	this.boundaryRect = null;
+	return;
+};
+
 FourDirection.prototype.lookAt = function(obj) {
 	this.lookingAt = obj;
 	return;
@@ -174,9 +196,7 @@ FourDirection.prototype.update = function(msDuration) {
 	
 	//AI for NPCs
 	if (!this.playerControlled) {
-		this.choiceCounter++;
-		
-		
+		this.choiceCounter += msDuration;		
 	}
 	
 	//Get to the destination
@@ -219,18 +239,30 @@ FourDirection.prototype.update = function(msDuration) {
 	if (this.movingRight) {
 		this.movingLeft = false;
 		this.x_speed = this.walkSpeed * this.xMultiplier;
+		if (this.boundaryRect && this.rect.right >= this.boundaryRect.right) {
+			this.x_speed = 0;
+		}
 	}
 	if (this.movingLeft) {
 		this.movingRight = false;
 		this.x_speed = -this.walkSpeed * this.xMultiplier;
+		if (this.boundaryRect && this.rect.left <= this.boundaryRect.left) {
+			this.x_speed = 0;
+		}
 	}
 	if (this.movingUp) {
 		this.movingDown = false;
 		this.y_speed = -this.walkSpeed * this.yMultiplier;
+		if (this.boundaryRect && this.rect.top <= this.boundaryRect.top) {
+			this.y_speed = 0;
+		}
 	}
 	if (this.movingDown) {
 		this.movingUp = false;
 		this.y_speed = this.walkSpeed * this.yMultiplier;
+		if (this.boundaryRect && this.rect.bottom >= this.boundaryRect.bottom) {
+			this.y_speed = 0;
+		}
 	}
 	if (!this.movingRight && !this.movingLeft) {
 		this.x_speed = 0;
@@ -249,9 +281,9 @@ FourDirection.prototype.update = function(msDuration) {
 		this.animation.start('static');
 	}
 	
-	if (this.choiceCounter == 200) {
-		xPos = Math.floor((Math.random() * 100) + 1);
-		yPos = Math.floor((Math.random() * 100) + 1);
+	if (this.choiceCounter >= 200) {
+		xPos = Math.floor((Math.random() * this.scene.camera.rect.width) + 1) + this.scene.camera.rect.left;
+		yPos = Math.floor((Math.random() * this.scene.camera.rect.height) + 1) + this.scene.camera.rect.top;
 		this.goTo([xPos, yPos]);
 		this.choiceCounter = 0;
 	}

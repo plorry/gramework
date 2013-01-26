@@ -50,7 +50,7 @@ Camera.prototype.update = function(msDuration) {
 	
 	scene_size = this.scene.view.getSize();
 	
-	if (this.rect.width < scene_size[0] && this.rect.height < scene_size[1]) {
+	if (this.rect.width <= scene_size[0] && this.rect.height <= scene_size[1]) {
 		this.zoom = this.zoom * this.zoom_multiplier;
 	}
 	this.rect.width = config.WIDTH / this.zoom;

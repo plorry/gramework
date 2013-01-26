@@ -12,11 +12,13 @@ var font = new gamejs.font.Font('20px Lucida Console');
 var Scene = exports.Scene = function(director, sceneConfig) {
 	this.objects_list = new gamejs.sprite.Group();
 	this.player_objects = new gamejs.sprite.Group();
+	this.npc_list = new gamejs.sprite.Group();
 	this.uiElements = new gamejs.sprite.Group();
 	this.objects_list.add(elements.getSprites());
+	this.npc_list.add(elements.getNPCs());
 	this.player_objects.add(elements.getPlayers());
 	this.uiElements.add(uiElements.getElements());
-  this.view = new gamejs.Surface([800, 600]);
+	this.view = new gamejs.Surface([800, 224]);
 	this.view._context.webkitImageSmoothingEnabled = false;
 	this.camera = new Camera(this);
 	this._frozen = false;
@@ -41,12 +43,14 @@ Scene.prototype.initScene = function(sceneConfig) {
 			triggers.push(new Trigger(trigger));
 		});
 	}
-
 	// setup the scene
 	// this.mapfile = sceneConfig.map || [];
 	this.map = new Map('../static/maps/boardroom.tmx');
-
+	var scene = this;
 	
+	this.objects_list.forEach(function(object) {
+		object.setScene(scene);
+	});
 	return;
 };
 
@@ -83,6 +87,8 @@ Scene.prototype.draw = function(display) {
 	var size = screen.getSize();
 	
 	var scaledScreen = gamejs.transform.scale(screen, [size[0] * config.SCALE, size[1] * config.SCALE]);
+	//var scaledScreen = gamejs.transform.scale(screen, [size[0], size[1]]);
+
 	scaledScreen._context.webkitImageSmoothingEnabled = false;
 	
 	display.blit(scaledScreen);
@@ -110,8 +116,11 @@ Scene.prototype.handleEvent = function(event) {
 	return;
 };
 
-Scene.prototype.spawn = function(obj, options) {
-	this.objects_list.add(new obj(options));
+Scene.prototype.spawn = function(obj, pos, options) {
+	new_obj = new obj(pos, options);
+	new_obj.setScene(this);
+	this.objects_list.add(new_obj);
+	this.npc_list.add(new_obj);
 	return;
 };
 
@@ -143,7 +152,8 @@ Scene.prototype.update = function(msDuration) {
 	
 	this.objects_list._sprites.sort(order);
 	if (!this.isFrozen()){
-		this.objects_list.update(msDuration);
+		this.npc_list.update(msDuration);
+		this.player_objects.update(msDuration);
 	}
 	this.camera.update(msDuration);
 	this.uiElements.forEach(function(element){
