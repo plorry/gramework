@@ -8,9 +8,19 @@ var testUpdate = function(msDuration, scene) {
 	return;
 };
 
+var testKill = function(scene) {
+	return (false);
+};
+
+var testKillEvent = function(scene) {
+	return;
+};
+
 exports.triggers = {
 	'testTrigger': {
 		'condition': testCondition,
-		'update': testUpdate
+		'update': testUpdate,
+		'killCondition': testKill,
+		'killEvent': testKillEvent
 	}
 };

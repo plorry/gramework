@@ -23,25 +23,41 @@ var getSprites = exports.getSprites = function() {
 	var sprites = [];
 	//Specifically turn our 4D objects into shooters
 	extendShooter(FourDirection);
-
+	
 	var peter_file = config.STATIC_PATH + 'images/sprites/peter.png';
 	var peter_dims = {width:14, height: 24};
-	var peter_sheet = new SpriteSheet(peter_file, peter_dims);
 	var peter_anims = {
 		'static': [0],
 		'walking': [0,3],
 	};
-	peter = new FourDirection([0,0], peter_sheet, peter_anims, true);
-	peter_2 = new FourDirection([40,40], peter_sheet, peter_anims, true, p2_controls);
+	
+	var peter_opts = {
+		spriteSheet: new SpriteSheet(peter_file, peter_dims),
+		animation: peter_anims,
+		playerControlled: true
+	};
+	
+	peter = new FourDirection([0,0], peter_opts);
+	
+	var peter_2_opts = peter_opts;
+	peter_2_opts.controlMapping = p2_controls;
+	
+	peter_2 = new FourDirection([35,35], peter_2_opts);
 	
 	var thug_file = config.STATIC_PATH + 'images/sprites/thug.png';
-	var thug_sheet = new SpriteSheet(thug_file, peter_dims);
 	var thug_anims = {
 		'static': [0]
 	};
 	
-	thug = new FourDirection([15,15], thug_sheet, thug_anims, false, null, 1);
-	thug_2 = new FourDirection([35,35], thug_sheet, thug_anims, false, null, 1);
+	var thug_opts = {
+		spriteSheet: new SpriteSheet(thug_file, peter_dims),
+		animation: thug_anims,
+		playerControlled: false,
+		walkSpeed: 1
+	};
+	
+	thug = new FourDirection([15,15], thug_opts);
+	thug_2 = new FourDirection([35,35], thug_opts);
 	
 	thug.lookAt(peter);
 	thug_2.lookAt(peter);
