@@ -64,22 +64,21 @@ var getSprites = exports.getSprites = function() {
 	thug.lookAt(peter);
 	thug_2.lookAt(peter);
 	
-	var doors_file = config.STATIC_PATH + 'images/sprites/doors.png';
-	var doors_dims = {width:32, height: 32};
-	var doors_sheet = new SpriteSheet(doors_file, doors_dims);
-	var doors_anims = {
-		'static': [0],
-		'opening': [1,2,3],
-		'closing': [4,5,6],
-	};
-	doors = new Object([100,0], doors_sheet, doors_anims);
+	// var doors_file = config.STATIC_PATH + 'images/sprites/doors.png';
+	// var doors_dims = {width:32, height: 32};
+	// var doors_sheet = new SpriteSheet(doors_file, doors_dims);
+	// var doors_anims = {
+	// 	'static': [0],
+	// 	'opening': [1,2,3],
+	// 	'closing': [4,5,6],
+	// };
+	// doors = new Object([100,0], doors_sheet, doors_anims);
 
 	sprites.push(peter);
 	sprites.push(peter_2);
 	sprites.push(thug);
 	sprites.push(thug_2);
-	console.log(doors);
-	sprites.push(doors);
+	// sprites.push(doors);
 	
 	return sprites;
 };
