@@ -91,7 +91,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 	};
 	
 	obj.prototype.hurt = function() {
-		this._hurt = 600;
+		this._hurt = 200;
 		return;
 	};
 	
@@ -128,7 +128,9 @@ var extendShooter = exports.extendShooter = function(obj) {
 			}
 		}
 		if (this.scene) {
-			this.setBoundary(this.scene.camera.rect);
+			var cam = this.scene.camera;
+			var boundRect = new gamejs.Rect([cam.rect.left, 90], [cam.rect.width, 70]);
+			this.setBoundary(boundRect);
 		}
 		
 		if (this.scene.npc_list.has(this)) {
@@ -156,10 +158,10 @@ var extendShooter = exports.extendShooter = function(obj) {
 		this.ignoreControl();
 		if (this.lookingRight) {
 			var offset = -20;
-			this.x_speed = -5
+			this.x_speed = -2
 		} else {
 			var offset = 20;
-			this.x_speed = 5;
+			this.x_speed = 2;
 		}
 		var dest = [this.realRect.center[0] + offset,  this.realRect.center[1]];
 		this.goTo(dest);

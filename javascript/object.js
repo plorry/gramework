@@ -87,7 +87,7 @@ Object.prototype.update = function(msDuration) {
     this.y_speed += this.y_accel;    
     this.x_speed += this.x_accel;
 	
-	this.realRect.moveIp(this.x_speed, this.y_speed);
+	this.realRect.moveIp(this.x_speed * 50 * (msDuration/1000), this.y_speed * 50 * (msDuration/1000));
 	this.rect.top = Math.round(this.realRect.top);
 	this.rect.left = Math.round(this.realRect.left);
     
@@ -171,9 +171,10 @@ FOUR-DIRECTION OBJECT
 An object, player-controlled or NPC, moving on a 2-dimensional plane
 */
 
-var Throwaway = exports.Throwaway = function(pos, options) {
+var Throwaway = exports.Throwaway = function(pos, options, parent) {
 	Throwaway.superConstructor.apply(this, arguments);
 	this.lifespan = options.lifespan || null;
+	this.parent = parent || null;
 	this.life = 0;
 };
 objects.extend(Throwaway, Object);
@@ -181,6 +182,10 @@ objects.extend(Throwaway, Object);
 Throwaway.prototype.update = function(msDuration) {
 	Object.prototype.update.apply(this, arguments);
 	this.life += msDuration;
+	
+	if (this.parent) {
+		this.rect.topleft = this.parent.hotspot;
+	}
 	
 	if (this.lifespan == null) {
 		if (this.animation.loopFinished) {
@@ -206,7 +211,7 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 	FourDirection.superConstructor.apply(this, arguments);
 	this.playerControlled = options.playerControlled || false;
 	this.controlMapping = options.controlMapping || defaultMapping;
-	this.walkSpeed = options.walkSpeed || 2;
+	this.walkSpeed = options.walkSpeed || 1;
 	this.xMultiplier = 1;
 	this.yMultiplier = 1;
 	this.dest = null;
@@ -286,15 +291,27 @@ FourDirection.prototype.update = function(msDuration) {
 	if (this.dest){
 		if (this.realRect.center[0] < this.dest[0]) {
 			this.moveRight();
+			if (this.x_speed < 0) {
+				this.movingRight = false;
+			}
 		}
 		if (this.realRect.center[0] > this.dest[0]) {
 			this.moveLeft();
+			if (this.x_speed > 0) {
+				this.movingLeft = false;
+			}
 		}
 		if (this.realRect.center[1] > this.dest[1]) {
 			this.moveUp();
+			if (this.y_speed > 0) {
+				this.movingUp = false;
+			}
 		}
 		if (this.realRect.center[1] < this.dest[1]) {
 			this.moveDown();
+			if (this.y_speed > 0) {
+				this.movingDown = false;
+			}
 		}
 		
 		var arrive = (this.rect.collidePoint(this.dest));

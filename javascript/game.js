@@ -1,5 +1,6 @@
 var gamejs = require('gamejs');
 var config = require('./project/config');
+var palettes = require('./palettes').palettes;
 
 exports.Director = function() {
 	var onAir = false;
@@ -17,7 +18,7 @@ exports.Director = function() {
 		display._context.webkitImageSmoothingEnabled = false;
 		
 		var canv = document.getElementById("gjs-canvas");
-		//cq(canv).matchPalette(SIMPLE);
+		//cq(canv).matchPalette(palettes.simple);
 		
 		return;
 	};

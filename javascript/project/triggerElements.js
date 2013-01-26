@@ -11,11 +11,6 @@ var testUpdate = function(msDuration, scene) {
 	scene.spawn(FourDirection, [200,0], elements.thug_opts);
 	scene.spawn(FourDirection, [300,0], elements.thug_opts);
 	scene.spawn(FourDirection, [250,200], elements.thug_opts);
-	scene.spawn(FourDirection, [200,200], elements.thug_opts);
-	scene.spawn(FourDirection, [300,50], elements.thug_opts);
-	scene.spawn(FourDirection, [200,50], elements.thug_opts);
-	scene.spawn(FourDirection, [100,224], elements.thug_opts);
-	scene.spawn(FourDirection, [100,224], elements.thug_opts);
 	scene.spawn(FourDirection, [150,224], elements.thug_opts);
 	scene.spawn(FourDirection, [100,224], elements.thug_opts);
 	scene.spawn(FourDirection, [100,224], elements.thug_opts);
