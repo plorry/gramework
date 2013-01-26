@@ -261,7 +261,19 @@ FourDirection.prototype.goTo = function(pos) {
 
 FourDirection.prototype.action1 = function() {
 	return;
-}
+};
+
+FourDirection.prototype.action2 = function() {
+	return;
+};
+
+FourDirection.prototype.lift1 = function() {
+	return;
+};
+
+FourDirection.prototype.lift2 = function() {
+	return;
+};
 
 FourDirection.prototype.handleEvent = function(event) {
 	if (event.type === gamejs.event.KEY_DOWN) {
@@ -294,6 +306,11 @@ FourDirection.prototype.handleEvent = function(event) {
 				
 			case this.controlMapping.BUTTON1:
 				this.action1();
+				break;
+			
+			case this.controlMapping.BUTTON2:
+				this.action2();
+				break;
 		}
 	} else if (event.type === gamejs.event.KEY_UP) {
 		switch (event.key) {
@@ -301,17 +318,28 @@ FourDirection.prototype.handleEvent = function(event) {
 				this.movingLeft = false;
 				this.yMultiplier = 1;
 				break;
+				
 			case this.controlMapping.RIGHT:
 				this.movingRight = false;
 				this.yMultiplier = 1;
 				break;
+				
 			case this.controlMapping.UP:
 				this.movingUp = false;
 				this.xMultiplier = 1;
 				break;
+				
 			case this.controlMapping.DOWN:
 				this.movingDown = false;
 				this.xMultiplier = 1;
+				break;
+			
+			case this.controlMapping.BUTTON1:
+				this.lift1();
+				break;
+				
+			case this.controlMapping.BUTTON2:
+				this.lift2();
 				break;
 		}
 	}

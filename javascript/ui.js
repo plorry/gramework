@@ -12,7 +12,7 @@ var Element = exports.Element = function(options) {
 	this.size = options.size || [10,10];
 	this.spriteSheet = options.spriteSheet || null;
 	this.margin = options.margin || 0;
-	this.active = options.active || true;
+	this.active = options.active || false;
 	if (this.spriteSheet) {
 		this.size[0] = this.spriteSheet.width;
 		this.size[1] = this.spriteSheet.height;
@@ -57,6 +57,15 @@ Element.prototype.update = function(msDuration) {
 		this.image._context.webkitImageSmoothingEnabled = false;
 	}
 	return;
+};
+
+Element.prototype.start = function() {
+	this.active = true;
+	return;
+};
+
+Element.prototype.hide = function() {
+	this.active = false;
 };
 
 var font = new gamejs.font.Font('8px Ebit');
@@ -104,4 +113,3 @@ TextArea.prototype.draw = function(display) {
 	display.blit(this.fontSurface, this.pos);
 	return;
 };
-

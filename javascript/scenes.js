@@ -18,6 +18,7 @@ var Scene = exports.Scene = function(director, sceneConfig) {
     this.view = new gamejs.Surface([800, 600]);
 	this.view._context.webkitImageSmoothingEnabled = false;
 	this.camera = new Camera(this);
+	this._frozen = false;
 
 	var sceneId = sceneId || 0;
 	this.elapsed = 0;
@@ -42,11 +43,26 @@ Scene.prototype.initScene = function(sceneConfig) {
 	return;
 };
 
+Scene.prototype.isFrozen = function() {
+	return this._frozen;
+};
+
+Scene.prototype.freeze = function() {
+	this._frozen = true;
+	return;
+};
+
+Scene.prototype.unFreeze = function() {
+	this._frozen = false;
+	return;
+};
+
 Scene.prototype.draw = function(display) {
 	display._context.webkitImageSmoothingEnabled = false;
 	display.fill("#F0A30F");
 	if (this.image) {
 		this.view.blit(this.image);
+		this.view._context.webkitImageSmoothingEnabled = false;
 	}
 	this.objects_list.draw(this.view);
 	
@@ -73,7 +89,7 @@ Scene.prototype.handleEvent = function(event) {
 		if (event.key === gamejs.event.K_SPACE) {
 			//LOG STUFF HERE
 			this.camera.zoomTo(2);
-			console.log(this.camera);
+			console.log(this);
 		}
 	}
 	if (event.type === gamejs.event.KEY_UP) {
@@ -92,6 +108,7 @@ Scene.prototype.update = function(msDuration) {
 	//reorder the sprites so the lower ones appear in foreground
 	var scene = this;
 	var triggers = this.triggers;
+	//Check each trigger for its activating condition - update active triggers - kill triggers that are done
 	this.triggers.forEach(function(trigger){
 		var index = triggers.indexOf(trigger);
 		if (trigger.condition(scene)) {
@@ -100,9 +117,11 @@ Scene.prototype.update = function(msDuration) {
 		if (trigger.isActive()){
 			trigger.update(msDuration, scene);
 		}
-		if (trigger.kill()) {
-			this.triggers.splice(index,1);
+		/*
+		if (trigger.killCondition(scene)) {
+			scene.triggers.splice(index,1);
 		}
+		*/
 	});
 	
 	this.objects_list._sprites.sort(order);
