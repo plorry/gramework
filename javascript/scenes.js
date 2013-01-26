@@ -3,6 +3,7 @@ var config = require('./project/config');
 var Camera = require('./camera').Camera;
 var elements = require('./project/elements');
 var uiElements = require('./project/uiElements');
+var soundElements = require('./project/soundElements');
 
 var font = new gamejs.font.Font('20px Lucida Console');
 
@@ -17,36 +18,36 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 	this.npc_list.add(elements.getNPCs());
 	this.player_objects.add(elements.getPlayers());
 	this.uiElements.add(uiElements.getElements());
-    this.view = new gamejs.Surface([800, 224]);
-	this.view._context.webkitImageSmoothingEnabled = false;
-	this.camera = new Camera(this);
+	soundElements.loadSounds();
+	this.camera = new Camera(this, true);
 	this._frozen = false;
 
 	var sceneId = sceneId || 0;
 	this.elapsed = 0;
 	this.image = null;
 	this.initScene(sceneConfig);
-		
-	this.camera.follow(peter);
 	
 	return this;
 };
 
 Scene.prototype.initScene = function(sceneConfig) {
 	this.image = gamejs.image.load(sceneConfig.image);
-	this.image._context.webkitImageSmoothingEnabled = false;
 	this.triggers = triggers = [];
+	var imageSize = this.image.getSize();
+    this.view = new gamejs.Surface([imageSize[0], 224]);
+
 	if (sceneConfig.triggers) {
 		sceneConfig.triggers.forEach(function(trigger) {
 			triggers.push(new Trigger(trigger));
 		});
 	}
-	
+		
 	var scene = this;
 	
 	this.objects_list.forEach(function(object) {
 		object.setScene(scene);
 	});
+		
 	return;
 };
 
@@ -65,24 +66,19 @@ Scene.prototype.unFreeze = function() {
 };
 
 Scene.prototype.draw = function(display) {
-	display._context.webkitImageSmoothingEnabled = false;
 	display.fill("#F0A30F");
 	if (this.image) {
 		this.view.blit(this.image);
-		this.view._context.webkitImageSmoothingEnabled = false;
 	}
 	this.objects_list.draw(this.view);
 	
 	var screen = this.camera.draw();
 	this.uiElements.draw(screen);
-	screen._context.webkitImageSmoothingEnabled = false;
 	
 	var size = screen.getSize();
 	
 	var scaledScreen = gamejs.transform.scale(screen, [size[0] * config.SCALE, size[1] * config.SCALE]);
 	//var scaledScreen = gamejs.transform.scale(screen, [size[0], size[1]]);
-
-	scaledScreen._context.webkitImageSmoothingEnabled = false;
 	
 	display.blit(scaledScreen);
 	
@@ -91,14 +87,16 @@ Scene.prototype.draw = function(display) {
 
 Scene.prototype.handleEvent = function(event) {
 	this.player_objects.forEach(function(player){
-		player.handleEvent(event);
+		if(player.inControl()){
+			player.handleEvent(event);
+		}
 	});
 	
 	if (event.type === gamejs.event.KEY_DOWN) {
 		if (event.key === gamejs.event.K_SPACE) {
 			//LOG STUFF HERE
 			this.camera.zoomTo(2);
-			console.log(this);
+			console.log(this.camera.dest);
 		}
 	}
 	if (event.type === gamejs.event.KEY_UP) {
@@ -135,7 +133,7 @@ Scene.prototype.update = function(msDuration) {
 			trigger.update(msDuration, scene);
 		}
 		if (trigger.killCondition(scene)) {
-			trigger.killEvent();
+			trigger.killEvent(scene);
 			trigger.deactivate();
 			scene.triggers.splice(index,1);
 		}
@@ -143,8 +141,11 @@ Scene.prototype.update = function(msDuration) {
 	
 	this.objects_list._sprites.sort(order);
 	if (!this.isFrozen()){
+		/*
 		this.npc_list.update(msDuration);
 		this.player_objects.update(msDuration);
+		*/
+		this.objects_list.update(msDuration);
 	}
 	this.camera.update(msDuration);
 	this.uiElements.forEach(function(element){
@@ -153,6 +154,19 @@ Scene.prototype.update = function(msDuration) {
 		}
 	});
 	this.elapsed += msDuration;
+	
+	var x_total = 0;
+	var y_total = 0;
+	this.player_objects.forEach(function(player) {
+		x_total += player.rect.center[0];
+		y_total += player.rect.center[1];
+	});
+	
+	var x_pos = x_total / this.player_objects.sprites().length;
+	var y_pos = y_total / this.player_objects.sprites().length;
+	
+	this.camera.follow([x_pos, y_pos]);
+	
 	return;
 };
 

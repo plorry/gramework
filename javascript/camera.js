@@ -1,7 +1,7 @@
 var gamejs = require('gamejs');
 var config = require('./project/config');
 
-var Camera = exports.Camera = function(scene) {
+var Camera = exports.Camera = function(scene, sharp) {
 	this.rect = new gamejs.Rect([0,0], [config.WIDTH, config.HEIGHT]);
 	this.scene = scene;
 	this.center = null;
@@ -11,6 +11,7 @@ var Camera = exports.Camera = function(scene) {
 	this.zoom = 1;
 	this.zoom_multiplier = 1;
 	this.targetZoom = null;
+	this.sharp = sharp || false;
 	return this;
 };
 
@@ -32,7 +33,7 @@ Camera.prototype.update = function(msDuration) {
 		}
 	}
 	if (this.center !==null) {
-		this.dest = this.center.rect.center;
+		this.dest = this.center;
 	}
 	
 	if (this.targetZoom !== null) {
@@ -56,6 +57,11 @@ Camera.prototype.update = function(msDuration) {
 	this.rect.width = config.WIDTH / this.zoom;
 	this.rect.height = config.HEIGHT / this.zoom;
 	
+	if (this.sharp) {
+		this.rect.left = Math.round(this.rect.left);
+		this.rect.top = Math.round(this.rect.top);
+	}
+	
 	//The camera's extent cannot be bigger than the current scene's size
 	if (this.rect.width > scene_size[0]) {this.rect.width = scene_size[0];}
 	if (this.rect.height > scene_size[1]) {this.rect.height = scene_size[1];}
@@ -67,19 +73,16 @@ Camera.prototype.update = function(msDuration) {
 	if (this.rect.right > scene_size[0]) {this.rect.right = scene_size[0];}
 	
 	this.view = new gamejs.Surface(scene_size);
-	this.view._context.webkitImageSmoothingEnabled = false;
 	
 	this.view.blit(this.scene.view, [0,0], this.rect);
 	
 	this.display = gamejs.transform.scale(this.view, [
 		this.rect.width * this.zoom,
 		this.rect.height * this.zoom]);
-	this.display._context.webkitImageSmoothingEnabled = false;
 	return;
 }
 
 Camera.prototype.draw = function() {
-	this.display._context.webkitImageSmoothingEnabled = false;
 	return this.display;
 };
 
@@ -87,8 +90,8 @@ Camera.prototype.panto = function(pos) {
 	this.dest = [pos[0], pos[1]];
 };
 
-Camera.prototype.follow = function(obj) {
-	this.center = obj;
+Camera.prototype.follow = function(pos) {
+	this.center = pos;
 };
 
 Camera.prototype.unfollow = function() {
