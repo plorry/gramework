@@ -55,7 +55,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 		if (this.canShoot()) {
 			this._isShooting = true;
 			this._canShoot = false;
-			sounds.shoot();
+			//sounds.shoot();
 			
 			if (this.lookingRight) {
 				var xPointB = this.rect.center[0] + this.range;
@@ -68,11 +68,14 @@ var extendShooter = exports.extendShooter = function(obj) {
 			
 			var shot = new Line(pointA, pointB, this);
 			this.shots.push(shot);
-			
-			this.getName = function() {
-				return _name;
-			};
 		}
+		console.log(this.shots[0]);
+		return;
+	};
+	
+	obj.prototype.lift1 = function() {
+		this._canShoot = true;
+		return;
 	};
 	
 	//Extend the original update function
@@ -86,6 +89,21 @@ var extendShooter = exports.extendShooter = function(obj) {
 				this.shots.splice(i,1);
 			}
 		}
+		if (this.scene) {
+			this.setBoundary(this.scene.camera.rect);
+		}
+		
+		if (this.scene.npc_list.has(this)) {
+			for (var i = 0; i < this.scene.player_objects.sprites().length; i++) {
+				var player = this.scene.player_objects.sprites()[i];
+				for (var j = 0; j < player.shots.length; j++) {
+					if (this.collisionRect.collideLine(player.shots[j].pointA, player.shots[j].pointB)) {
+						this.die();
+					}
+				}
+			}
+		}
+		
 		return;
 	};
 	
@@ -98,7 +116,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 			for (var i = 0; i < this.shots.length; i++) {
 				this.shots[i].draw(display);
 			}
-		};
+		}
 		return;
 	};
 	
