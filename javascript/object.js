@@ -8,7 +8,8 @@ var palettes = require('./palettes').palettes;
 var GRAVITY = 9.8;
 
 var Object = exports.Object = function(pos, options) {
-    this.pos = pos || [0,0];
+	this._groups = [];
+  this.pos = pos || [0,0];
 	this.spriteSheet = options.spriteSheet || null;
 	if (this.spriteSheet) {
 		this.width = this.spriteSheet.width;
@@ -109,7 +110,7 @@ Object.prototype.arcTo = function(dest) {
 };
 
 Object.prototype.draw = function(display) {
-	this.image._context.webkitImageSmoothingEnabled = false;
+	if (this.image) this.image._context.webkitImageSmoothingEnabled = false;
 	//cq(this.image._canvas).matchPalette(palettes.simple);
 	
 	if (this.spriteSheet) {	

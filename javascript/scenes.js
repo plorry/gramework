@@ -16,7 +16,7 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 	this.objects_list.add(elements.getSprites());
 	this.player_objects.add(elements.getPlayers());
 	this.uiElements.add(uiElements.getElements());
-    this.view = new gamejs.Surface([800, 600]);
+  this.view = new gamejs.Surface([800, 600]);
 	this.view._context.webkitImageSmoothingEnabled = false;
 	this.camera = new Camera(this);
 	this._frozen = false;
@@ -33,7 +33,7 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 
 Scene.prototype.initScene = function(sceneConfig) {
 	this.image = gamejs.image.load(sceneConfig.image);
-	this.image._context.webkitImageSmoothingEnabled = false;
+	if (this.image) this.image._context.webkitImageSmoothingEnabled = false;
 	this.triggers = triggers = sceneConfig.triggers || [];
 
 	if (sceneConfig.triggers) {
@@ -71,6 +71,9 @@ Scene.prototype.draw = function(display) {
 		this.view.blit(this.image);
 		this.view._context.webkitImageSmoothingEnabled = false;
 	}
+
+	this.map.draw(this.view);
+
 	this.objects_list.draw(this.view);
 	
 	var screen = this.camera.draw();
@@ -135,6 +138,8 @@ Scene.prototype.update = function(msDuration) {
 			scene.triggers.splice(index,1);
 		}
 	});
+
+	this.map.update(msDuration);
 	
 	this.objects_list._sprites.sort(order);
 	if (!this.isFrozen()){
