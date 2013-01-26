@@ -4,7 +4,7 @@ var config = require('./project/config');
 var Animation = require('/animate').Animation;
 
 var Element = exports.Element = function(options) {
-	this._groups = [];
+	Element.superConstructor.apply(this, arguments);
 	this.image = options.image || null;
 	if (options.animation){
 		this.animation = new Animation(options.spriteSheet, options.animation, 12) || null;

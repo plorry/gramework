@@ -1,6 +1,7 @@
 var gamejs = require('gamejs');
 var config = require('./config');
 var sounds = require('./soundElements').sounds;
+var elements = require('./elements');
 
 var extendShooter = exports.extendShooter = function(obj) {
 	/*
@@ -13,6 +14,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 		this.time = 0;
 		this.active = true;
 		this.owner = owner;
+		this.dir = this.owner.lookingRight;
 		return this;
 	};
 	
@@ -22,8 +24,8 @@ var extendShooter = exports.extendShooter = function(obj) {
 	};
 	//Update our line
 	Line.prototype.update = function(msDuration) {
-		this.time++;
-		if (this.time >= 10) {
+		this.time += msDuration;
+		if (this.time >= 600) {
 			this.kill();
 		}
 		return;
@@ -41,6 +43,9 @@ var extendShooter = exports.extendShooter = function(obj) {
 		
 	obj.prototype.range = 110;
 	obj.prototype.shots = [];
+	obj.prototype.damage = 0;
+	obj.prototype._hurt = 0;
+	obj.prototype.shotCounter = 0;
 	obj.prototype._canShoot = true;
 	obj.prototype._isShooting = false;
 	obj.prototype.canShoot = function() {
@@ -52,11 +57,14 @@ var extendShooter = exports.extendShooter = function(obj) {
 	
 	obj.prototype.action1 = function() {
 		var _name = "shoot";
+		
 		if (this.canShoot()) {
+			this.shotCounter = 300;
 			this._isShooting = true;
 			this._canShoot = false;
-			//sounds.shoot();
-			
+			sounds.shoot();
+			elements.spawnShot(this);
+
 			if (this.lookingRight) {
 				var xPointB = this.rect.center[0] + this.range;
 			} else {
@@ -69,12 +77,21 @@ var extendShooter = exports.extendShooter = function(obj) {
 			var shot = new Line(pointA, pointB, this);
 			this.shots.push(shot);
 		}
-		console.log(this.shots[0]);
+		this._lifted1 = false;
 		return;
 	};
 	
 	obj.prototype.lift1 = function() {
-		this._canShoot = true;
+		this._lifted1 = true;
+		return;
+	};
+	
+	obj.prototype.isHurt = function() {
+		return this._hurt > 0;
+	};
+	
+	obj.prototype.hurt = function() {
+		this._hurt = 600;
 		return;
 	};
 	
@@ -83,6 +100,27 @@ var extendShooter = exports.extendShooter = function(obj) {
 		
 	obj.prototype.update = function(msDuration) {
 		oldUpdate.call(this, msDuration);
+		
+		if (this.shotCounter <= 0 && this._lifted1 == true) {
+			this.shotCounter = 0;
+			this._canShoot = true;
+		}
+		
+		if (this.shotCounter > 0) {
+			this._canShoot = false;
+			this.shotCounter -= msDuration;
+		}
+		
+		if (this._hurt > 0) {
+			this._hurt -= msDuration;
+			if ('hurt1' in this.animation.spec) {
+				this.animation.start('hurt1');
+			}
+		}
+		if (this._hurt < 0) {
+			this._hurt = 0;
+		}
+		
 		for (var i = 0; i < this.shots.length; i++) {
 			this.shots[i].update(msDuration);
 			if (this.shots[i].active == false) {
@@ -97,13 +135,35 @@ var extendShooter = exports.extendShooter = function(obj) {
 			for (var i = 0; i < this.scene.player_objects.sprites().length; i++) {
 				var player = this.scene.player_objects.sprites()[i];
 				for (var j = 0; j < player.shots.length; j++) {
-					if (this.collisionRect.collideLine(player.shots[j].pointA, player.shots[j].pointB)) {
-						this.die();
+					if (this.collisionRect.collideLine(player.shots[j].pointA, player.shots[j].pointB)
+						&& !this.isHurt()) {
+						this.recoil();
+						this.damage += 1;
 					}
 				}
 			}
 		}
 		
+		if (this.damage >= this.maxHealth) {
+			this.die();
+		}
+		
+		return;
+	};
+	
+	obj.prototype.recoil = function() {
+		this.stop();
+		this.ignoreControl();
+		if (this.lookingRight) {
+			var offset = -20;
+			this.x_speed = -5
+		} else {
+			var offset = 20;
+			this.x_speed = 5;
+		}
+		var dest = [this.realRect.center[0] + offset,  this.realRect.center[1]];
+		this.goTo(dest);
+		this.hurt();
 		return;
 	};
 	
@@ -113,8 +173,8 @@ var extendShooter = exports.extendShooter = function(obj) {
 	obj.prototype.draw = function(display) {
 		oldDraw.call(this, display);
 		if (config.DEBUG) {
-			for (var i = 0; i < this.shots.length; i++) {
-				this.shots[i].draw(display);
+			for (var k = 0; k < this.shots.length; k++) {
+				this.shots[k].draw(display);
 			}
 		}
 		return;

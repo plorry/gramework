@@ -1,6 +1,6 @@
 var gamejs = require('gamejs');
 var config = require('./config');
-var Object = require('../object').Object;
+var Throwaway = require('../object').Throwaway;
 var FourDirection = require('../object').FourDirection;
 var extendShooter = require('./extendSprites').extendShooter;
 
@@ -17,12 +17,25 @@ var p2_controls = {
 	'BUTTON2': gamejs.event.K_c
 };
 
-var dims = {width:14, height:24};
+var dims = {width:16, height:20};
 
-var thug_file = config.STATIC_PATH + 'images/sprites/thug.png';
+var thug_file = config.STATIC_PATH + 'images/sprites/enemy-suit01.png';
+var shot_file = config.STATIC_PATH + 'images/sprites/shot.png';
+var woo_file = config.STATIC_PATH + 'images/sprites/john-woo.png';
+var chow_file = config.STATIC_PATH + 'images/sprites/chow-yun-fat.png';
 
 var thug_anims = {
-	'static': [0]
+	'static': [0],
+	'walking': [1,4],
+	'hurt1': [5]
+};
+var woo_anims = {
+	'static': [0],
+	'walking': [3,6],
+};
+var shot_anims = {
+	fps: 12,
+	'static': [0,2]
 };
 
 var thug_opts = exports.thug_opts = {
@@ -32,38 +45,42 @@ var thug_opts = exports.thug_opts = {
 	walkSpeed: 1
 };
 
+var shot_opts = exports.shot_opts = {
+	spriteSheet: [shot_file, {width:11, height:7}],
+	animation: shot_anims
+};
+var woo_opts = {
+	spriteSheet: [woo_file, dims],
+	animation: woo_anims,
+	playerControlled: true
+};
+
+var spawnShot = exports.spawnShot = function(obj) {
+	shot = new Throwaway(obj.hotspot, shot_opts);
+	shot.setScene(obj.scene);
+	obj.scene.objects_list.add(shot);
+	shot.lookingRight = !(obj.lookingRight);
+};
+
 var getSprites = exports.getSprites = function() {
 	var sprites = [];
 	//Specifically turn our 4D objects into shooters
 	extendShooter(FourDirection);
 	
-	var peter_file = config.STATIC_PATH + 'images/sprites/peter.png';
-	var peter_dims = {width:14, height: 24};
+	woo = new FourDirection([0,0], woo_opts);
 	
-	var peter_anims = {
-		'static': [0],
-		'walking': [0,3],
-	};
+	var chow_opts = woo_opts;
+	chow_opts.controlMapping = p2_controls;
+	chow_opts.spriteSheet = [chow_file, dims];
 	
-	var peter_opts = {
-		spriteSheet: [peter_file, peter_dims],
-		animation: peter_anims,
-		playerControlled: true
-	};
-	
-	peter = new FourDirection([0,0], peter_opts);
-	
-	var peter_2_opts = peter_opts;
-	peter_2_opts.controlMapping = p2_controls;
-	
-	peter_2 = new FourDirection([35,35], peter_2_opts);
+	chow = new FourDirection([35,35], chow_opts);
 		
 	thug = new FourDirection([15,15], thug_opts);
 	thug_2 = new FourDirection([35,35], thug_opts);
 	
-	thug.lookAt(peter);
-	thug_2.lookAt(peter);
-	
+	thug.lookAt(woo);
+	thug_2.lookAt(woo);
+
 	// var doors_file = config.STATIC_PATH + 'images/sprites/doors.png';
 	// var doors_dims = {width:32, height: 32};
 	// var doors_sheet = new SpriteSheet(doors_file, doors_dims);
@@ -73,7 +90,7 @@ var getSprites = exports.getSprites = function() {
 	// 	'closing': [4,5,6],
 	// };
 	// doors = new Object([100,0], doors_sheet, doors_anims);
-
+	
 	sprites.push(peter);
 	sprites.push(peter_2);
 	sprites.push(thug);
@@ -86,8 +103,8 @@ var getSprites = exports.getSprites = function() {
 var getPlayers = exports.getPlayers = function() {
 	var sprites = [];
 	
-	sprites.push(peter);
-	sprites.push(peter_2);
+	sprites.push(woo);
+	sprites.push(chow);
 	
 	return sprites;
 };

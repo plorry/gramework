@@ -36,7 +36,7 @@ exports.Director = function() {
         return currentScene;
     };
 
-    var display = gamejs.display.setMode([config.WIDTH * config.SCALE, config.HEIGHT * config.SCALE]);
+    var display = gamejs.display.setMode([config.WIDTH * config.SCALE, config.HEIGHT * config.SCALE], gamejs.display.DISABLE_SMOOTHING);
     //var display = gamejs.display.setMode([config.WIDTH, config.HEIGHT]);
 	display._context.webkitImageSmoothingEnabled = false;
 	if (config.DEBUG) {

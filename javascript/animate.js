@@ -1,7 +1,7 @@
 var gamejs = require('gamejs');
 
-var Animation = exports.Animation = function(spriteSheet, animationSpec, fps) {
-    this.fps = fps || 6;
+var Animation = exports.Animation = function(spriteSheet, animationSpec) {
+    this.fps = animationSpec.fps || 6;
     this.frameDuration = 1000 / this.fps;
     this.spec = animationSpec;
 

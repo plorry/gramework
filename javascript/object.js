@@ -1,4 +1,5 @@
 var gamejs = require('gamejs');
+var Sprite = require('gamejs/sprite').Sprite;
 var config = require('./project/config');
 var draw = require('gamejs/draw');
 var objects = require('gamejs/utils/objects');
@@ -9,9 +10,8 @@ var palettes = require('./palettes').palettes;
 var GRAVITY = 9.8;
 
 var Object = exports.Object = function(pos, options) {
-	
-	this._groups = [];
-	this.pos = pos || [0,0];
+	Object.superConstructor.apply(this, arguments);
+    this.pos = pos || [0,0];
 	this.spriteSheet = new SpriteSheet(options.spriteSheet[0], options.spriteSheet[1]) || null;
 	if (this.spriteSheet) {
 		this.width = this.spriteSheet.width;
@@ -41,10 +41,12 @@ var Object = exports.Object = function(pos, options) {
     this.y_max = 10;
     this.bounce = 0.8;
 	
+	this._inControl = true;
+	
 	this.count = 0;
     
 	if (options.animation) {
-		this.animation = new Animation(this.spriteSheet, options.animation, 20);
+		this.animation = new Animation(this.spriteSheet, options.animation);
 		this.animation.start('static');
 	}
 	
@@ -58,10 +60,20 @@ var Object = exports.Object = function(pos, options) {
     };
     return this;
 };
-objects.extend(Object, gamejs.sprite.Sprite);
+objects.extend(Object, Sprite);
 
 Object.prototype.setScene = function(scene) {
 	this.scene = scene;
+};
+
+Object.prototype.ignoreControl = function() {
+	this._inControl = false;
+	return;
+};
+
+Object.prototype.restoreControl = function() {
+	this._inControl = true;
+	return;
 };
 
 Object.prototype.update = function(msDuration) {
@@ -107,7 +119,8 @@ Object.prototype.update = function(msDuration) {
 		}
 	}
 	
-	this.collisionRect = new gamejs.Rect([this.rect.left+2, this.rect.top+2],[this.rect.width-4, this.rect.height-4]);
+	this.collisionRect.top = this.rect.top + 2;
+	this.collisionRect.left = this.rect.left + 2;
 	return;
 };
 
@@ -115,8 +128,12 @@ Object.prototype.arcTo = function(dest) {
 	return;
 };
 
+Object.prototype.inControl = function() {
+	return this._inControl;
+};
+
 Object.prototype.draw = function(display) {
-	if (this.image) this.image._context.webkitImageSmoothingEnabled = false;
+	if(this.image) this.image._context.webkitImageSmoothingEnabled = false;
 	//cq(this.image._canvas).matchPalette(palettes.simple);
 	
 	if (this.spriteSheet) {	
@@ -126,15 +143,19 @@ Object.prototype.draw = function(display) {
 	}
 	
 	if (config.DEBUG) {
-		draw.rect(display, "#000FFF", this.collisionRect, 3);
+		var color = "#000FFF";
+		if (!this._inControl) {
+			var color = "#555000";
+		}
+		draw.rect(display, color, this.collisionRect, 3);
 	}
 	
 	return;
 };
 
 Object.prototype.die = function() {
-	var index = this.scene.objects_list.remove(this);
-	var index = this.scene.npc_list.remove(this);
+	this.scene.objects_list.remove(this);
+	this.scene.npc_list.remove(this);
 };
 
 var defaultMapping = {
@@ -151,9 +172,39 @@ FOUR-DIRECTION OBJECT
 An object, player-controlled or NPC, moving on a 2-dimensional plane
 */
 
+var Throwaway = exports.Throwaway = function(pos, options) {
+	Throwaway.superConstructor.apply(this, arguments);
+	this.lifespan = options.lifespan || null;
+	this.life = 0;
+};
+objects.extend(Throwaway, Object);
+
+Throwaway.prototype.update = function(msDuration) {
+	Object.prototype.update.apply(this, arguments);
+	this.life += msDuration;
+	
+	if (this.lifespan == null) {
+		if (this.animation.loopFinished) {
+			this.kill();
+		}
+	} else {
+		if (this.life >= this.lifespan) {
+			this.kill();
+		}
+	}
+	
+	return;
+};
+
+Throwaway.prototype.draw = function(display) {
+	if (this.image) {
+		Object.prototype.draw.apply(this, arguments);
+	}
+	return;
+};
+
 var FourDirection = exports.FourDirection = function(pos, options) {
 	FourDirection.superConstructor.apply(this, arguments);
-	this._groups = [];
 	this.playerControlled = options.playerControlled || false;
 	this.controlMapping = options.controlMapping || defaultMapping;
 	this.walkSpeed = options.walkSpeed || 2;
@@ -162,6 +213,8 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 	this.dest = null;
 	this.choiceCounter = 0;
 	this.boundaryRect = null;
+	this.maxHealth = options.maxHealth || 3;
+	this.hotspot = null;
 };
 objects.extend(FourDirection, Object);
 
@@ -173,6 +226,7 @@ FourDirection.prototype.stop = function() {
 	this.movingUp = false;
 	this.movingDown = false;
 	this.dest = null;
+	this.animation.start('static');
 	return;
 };
 
@@ -191,77 +245,123 @@ FourDirection.prototype.lookAt = function(obj) {
 	return;
 };
 
+FourDirection.prototype.moveLeft = function() {
+	this.movingLeft = true;
+	this.movingRight = false;
+};
+
+FourDirection.prototype.moveRight = function() {
+	this.movingLeft = false;
+	this.movingRight = true;
+};
+
+FourDirection.prototype.moveUp = function() {
+	this.movingUp = true;
+	this.movingDown = false;
+};
+
+FourDirection.prototype.moveDown = function() {
+	this.movingUp = false;
+	this.movingDown = true;
+};
+
 FourDirection.prototype.update = function(msDuration) {
-	Object.prototype.update.apply(this, arguments);
+	
+	var topleft = this.rect.topleft;
+	if (this.lookingRight) {
+		this.hotspot = [topleft[0] + 14, topleft[1] + 5];
+	} else {
+		this.hotspot = [topleft[0] - 8, topleft[1] + 5];
+	}
 	
 	//AI for NPCs
 	if (!this.playerControlled) {
-		this.choiceCounter += msDuration;		
+		this.choiceCounter += msDuration;
+		
+		if (!this.lookingAt) {
+			this.lookingAt = this.scene.player_objects.sprites()[0];
+		}
 	}
 	
 	//Get to the destination
 	if (this.dest){
 		if (this.realRect.center[0] < this.dest[0]) {
-			this.movingLeft = false;
-			this.movingRight = true;
+			this.moveRight();
 		}
 		if (this.realRect.center[0] > this.dest[0]) {
-			this.movingRight = false;
-			this.movingLeft = true;
+			this.moveLeft();
 		}
 		if (this.realRect.center[1] > this.dest[1]) {
-			this.movingDown = false;
-			this.movingUp = true;
+			this.moveUp();
 		}
 		if (this.realRect.center[1] < this.dest[1]) {
-			this.movingUp = false;
-			this.movingDown = true;
+			this.moveDown();
 		}
-		var xClose = (this.realRect.center[0] > this.dest[0] - this.walkSpeed
-			&& this.realRect.center[0] < this.dest[0] + this.walkSpeed);
-		var yClose = (this.realRect.center[1] > this.dest[1] - this.walkSpeed
-			&& this.realRect.center[1] < this.dest[1] + this.walkSpeed);
+		
+		var arrive = (this.rect.collidePoint(this.dest));
+		/*
 		if (xClose) {
 			this.movingRight = false;
 			this.movingLeft = false;
-			this.xSpeed = 0;
+			this.x_speed = 0;
+			this.realRect.center[0] = this.dest[0];
+			console.log('yep');
 		}
 		if (yClose) {
 			this.movingUp = false;
 			this.movingDown = false;
-			this.ySpeed = 0;
-		}
-		if (xClose && yClose) {
+			this.y_speed = 0;
+			this.realRect.center[1] = this.dest[1];
+			console.log('yep');
+		}*/
+		//I've arrived!
+		if (arrive) {
 			this.stop();
+			this.restoreControl();
+			console.log('yop');
 		}
 	}
 	
-	if (this.movingRight) {
-		this.movingLeft = false;
-		this.x_speed = this.walkSpeed * this.xMultiplier;
-		if (this.boundaryRect && this.rect.right >= this.boundaryRect.right) {
-			this.x_speed = 0;
+	if (this._inControl) {
+		if (this.movingRight) {
+			this.movingLeft = false;
+			this.x_speed = this.walkSpeed * this.xMultiplier;
+			if (this.boundaryRect && this.rect.right >= this.boundaryRect.right) {
+				this.x_speed = 0;
+			}
+			if (this.animation.currentAnimation != 'walking') {
+				this.animation.start('walking');
+			}
 		}
-	}
-	if (this.movingLeft) {
-		this.movingRight = false;
-		this.x_speed = -this.walkSpeed * this.xMultiplier;
-		if (this.boundaryRect && this.rect.left <= this.boundaryRect.left) {
-			this.x_speed = 0;
+		if (this.movingLeft) {
+			this.movingRight = false;
+			this.x_speed = -this.walkSpeed * this.xMultiplier;
+			if (this.boundaryRect && this.rect.left <= this.boundaryRect.left) {
+				this.x_speed = 0;
+			}
+			if (this.animation.currentAnimation != 'walking') {
+				this.animation.start('walking');
+			}
 		}
-	}
-	if (this.movingUp) {
-		this.movingDown = false;
-		this.y_speed = -this.walkSpeed * this.yMultiplier;
-		if (this.boundaryRect && this.rect.top <= this.boundaryRect.top) {
-			this.y_speed = 0;
+		if (this.movingUp) {
+			this.movingDown = false;
+			this.y_speed = -this.walkSpeed * this.yMultiplier;
+			if (this.boundaryRect && this.rect.top <= this.boundaryRect.top) {
+				this.y_speed = 0;
+			}
+			if (this.animation.currentAnimation != 'walking') {
+				this.animation.start('walking');
+			}
 		}
-	}
-	if (this.movingDown) {
-		this.movingUp = false;
-		this.y_speed = this.walkSpeed * this.yMultiplier;
-		if (this.boundaryRect && this.rect.bottom >= this.boundaryRect.bottom) {
-			this.y_speed = 0;
+		if (this.movingDown) {
+			this.movingUp = false;
+			this.y_speed = this.walkSpeed * this.yMultiplier;
+			if (this.boundaryRect && this.rect.bottom >= this.boundaryRect.bottom) {
+				this.y_speed = 0;
+			}
+			if (this.animation.currentAnimation != 'walking') {
+				this.animation.start('walking');
+			}
 		}
 	}
 	if (!this.movingRight && !this.movingLeft) {
@@ -281,12 +381,14 @@ FourDirection.prototype.update = function(msDuration) {
 		this.animation.start('static');
 	}
 	
-	if (this.choiceCounter >= 200) {
+	if (this.choiceCounter >= 1000) {
 		xPos = Math.floor((Math.random() * this.scene.camera.rect.width) + 1) + this.scene.camera.rect.left;
 		yPos = Math.floor((Math.random() * this.scene.camera.rect.height) + 1) + this.scene.camera.rect.top;
 		this.goTo([xPos, yPos]);
 		this.choiceCounter = 0;
 	}
+	
+	Object.prototype.update.apply(this, arguments);
 };
 
 FourDirection.prototype.goTo = function(pos) {
@@ -320,9 +422,8 @@ FourDirection.prototype.handleEvent = function(event) {
 				break;
 				
 			case this.controlMapping.RIGHT:
-				this.movingRight = true;
+				this.moveRight();
 				this.lookingRight = true;
-				this.movingLeft = false;
 				this.yMultiplier = 0.707;
 				break;
 				
@@ -378,3 +479,7 @@ FourDirection.prototype.handleEvent = function(event) {
 		}
 	}
 };
+
+var Pickup = exports.Pickup = function(pos, options) {
+	
+}
