@@ -1,5 +1,4 @@
 var gamejs = require('gamejs');
-var tmx = require('gamejs/tmx');
 var objects = require('gamejs/utils/objects');
 
 /*
@@ -180,7 +179,7 @@ var Map = exports.Map = function(url) {
 
     // Initialize.
     var self = this;
-    var map = new tmx.Map(url);
+    var map = new gamejs.tmx.Map(url);
     var mapController = new MapController();
 
     TileMap.createMatrix({

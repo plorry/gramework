@@ -2,6 +2,7 @@ var gamejs = require('gamejs');
 var config = require('./project/config');
 var Camera = require('./camera').Camera;
 var elements = require('./project/elements');
+var Map = require('./maps').Map;
 var uiElements = require('./project/uiElements');
 
 var font = new gamejs.font.Font('20px Lucida Console');
@@ -33,13 +34,19 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 Scene.prototype.initScene = function(sceneConfig) {
 	this.image = gamejs.image.load(sceneConfig.image);
 	this.image._context.webkitImageSmoothingEnabled = false;
-	this.triggers = triggers = [];
+	this.triggers = triggers = sceneConfig.triggers || [];
+
 	if (sceneConfig.triggers) {
 		sceneConfig.triggers.forEach(function(trigger) {
 			triggers.push(new Trigger(trigger));
 		});
 	}
-	//this.triggers = sceneConfig.triggers || [];
+
+	// setup the scene
+	// this.mapfile = sceneConfig.map || [];
+	this.map = new Map('../static/maps/boardroom.tmx');
+
+	
 	return;
 };
 
