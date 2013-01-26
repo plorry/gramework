@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <meta http-equiv="no-cache">
 <meta http-equiv="Expires" content="-1">
 <meta http-equiv="Cache-Control" content="no-cache">
     <style type='text/css'>
 	@font-face{
 		font-family:Ebit;
-		src: url("/static/fonts/emulogic.ttf");	
+		src: url("/static/fonts/emulogic.ttf");
 	}
 	canvas {
         border:2px solid black;
@@ -48,18 +49,18 @@
     </div>
 	<script type='text/javascript'>
 	var canv = document.getElementById('gjs-canvas');
-		function fullscreen() {
-			var el = document.getElementById('gjs-canvas');
-	 
-			   if(el.webkitRequestFullScreen) {
-				   el.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-			   }
-			  else {
-				 el.mozRequestFullScreen();
-			  }  
-		}
-		
-		canv.addEventListener("click",fullscreen)
+		// function fullscreen() {
+		// 	var el = document.getElementById('gjs-canvas');
+
+		// 	   if(el.webkitRequestFullScreen) {
+		// 		   el.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+		// 	   }
+		// 	  else {
+		// 		 el.mozRequestFullScreen();
+		// 	  }
+		// }
+
+		// canv.addEventListener("click",fullscreen)
 	</script>
 </body>
 </html>
