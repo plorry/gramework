@@ -25,6 +25,8 @@ var Object = exports.Object = function(pos, options) {
 	this.realRect = new gamejs.Rect(this.rect);
 	this.collisionRect = new gamejs.Rect([this.rect.left+1, this.rect.top+1],[this.rect.width-2, this.rect.height-2]);
 	
+	this.static_anim = 'static';
+	
 	this.scene = null;
 	
 	this.lookingRight = false;
@@ -239,7 +241,7 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 };
 objects.extend(FourDirection, Object);
 
-FourDirection.prototype.stop = function() {
+Object.prototype.stop = function() {
 	this.x_speed = 0;
 	this.y_speed = 0;
 	this.movingLeft = false;
@@ -539,4 +541,10 @@ Pickup.prototype.update = function(msDuration) {
 	if (this.isArcing) {
 		this.available = false;
 	}
+	
+	if (this.y_speed >= 3 && this.isArcing) {
+		this.stop();
+		this.isArcing = false;
+		this.available = true;
+	}	
 };

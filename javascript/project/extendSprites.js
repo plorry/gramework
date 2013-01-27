@@ -52,6 +52,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 	obj.prototype._canShoot = true;
 	obj.prototype._isShooting = false;
 	obj.prototype.hurtTime = 100;
+	obj.prototype.escaping = false;
 	obj.prototype.canShoot = function() {
 		return this._canShoot;
 	};
@@ -178,7 +179,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 						this.crouch();
 						if (this.holding != null) {
 							this.holding.heldBy = null;
-							this.holding.arcTo([this.rect.center[0] -10, this.rect.center[1]]);
+							this.holding.arcTo([this.rect.center[0] + (10 * (Math.floor(Math.random() * 2) - 1)), this.rect.center[1]]);
 							this.holding = null;
 						}
 					}
@@ -186,11 +187,24 @@ var extendShooter = exports.extendShooter = function(obj) {
 			}
 			
 			var collisions = gamejs.sprite.spriteCollide(this, this.scene.objects_list, false);
+			var enemy_collisions = gamejs.sprite.spriteCollide(this, this.scene.npc_list, false);
 			
 			if (this.holding != null) {
 				var canHold = 1;
 			} else {
 				var canHold = 2;
+			}
+			
+			var theresAGun = false;
+			
+			for (var i = 0; i < enemy_collisions.length; i++) {
+				var enemy = enemy_collisions[i];
+				if (enemy.holding == null){
+					this.crouch();
+					enemy.recoil();
+
+					//elements.spawnGun(enemy);
+				}				
 			}
 			
 			for (var i = 0; i < collisions.length; i++) {
@@ -202,6 +216,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 				} else if (collisions[i].type == 'case' && collisions[i].available) {
 					this.holding = collisions[i];
 					collisions[i].heldBy = this;
+					collisions[i].available = false;
 				}
 			}
 		}
@@ -213,6 +228,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 				if (collisions[i].type == 'case' && collisions[i].available) {
 					this.holding = collisions[i];
 					collisions[i].heldBy = this;
+					collisions[i].available = false;
 				}
 			}
 			
@@ -224,6 +240,11 @@ var extendShooter = exports.extendShooter = function(obj) {
 					if (this.collisionRect.collideLine(player.shots[j].pointA, player.shots[j].pointB)
 						&& !this.isHurt() && this.damage < this.maxHealth && player.shots[j].playerShot == true) {
 						this.recoil();
+						if (this.holding != null) {
+							this.holding.heldBy = null;
+							this.holding.arcTo([this.rect.center[0] + (10 * (Math.floor(Math.random() * 2) - 1)), this.rect.center[1]]);
+							this.holding = null;
+						}
 						this.damage += 1;
 					}
 				}
@@ -237,7 +258,32 @@ var extendShooter = exports.extendShooter = function(obj) {
 						}
 					}
 				}
-			}			
+			}
+			
+			if (this.holding != null) {
+			
+				if (this.holding.heldBy != this) {
+					this.holding = null;
+				}
+			
+				if (!this.escaping) {
+					if (this.realRect.center[0] > this.scene.camera.rect.center[0]){
+						this.escapeSpeed = 1;
+					} else {
+						this.escapeSpeed = -1;
+					}
+					this.escaping = true;
+				}
+				if (this.escapeSpeed < 0) {
+					this.goTo([10, 110]);
+				} else {
+					this.goTo([10000, 110]);
+				}
+				this.x_speed = this.escapeSpeed;
+			} else {
+				this.escaping = false;
+			}
+			
 		}
 		
 		if (this.damage >= this.maxHealth) {
@@ -277,6 +323,9 @@ var extendShooter = exports.extendShooter = function(obj) {
 			var offset = 20;
 			this.x_speed = 2;
 		}
+		
+		
+		
 		var dest = [this.realRect.center[0] + offset,  this.realRect.center[1]];
 		this.goTo(dest);
 		this.hurt();

@@ -16,7 +16,10 @@ exports.Director = function() {
 		currentScene.draw(display);
 		
 		var canv = document.getElementById("gjs-canvas");
-		//cq(canv).matchPalette(palettes.gameboy);
+		
+		if (currentScene.cutscene == true) {
+			cq(canv).matchPalette(palettes.gameboy);
+		}
 		
 		return;
 	};
