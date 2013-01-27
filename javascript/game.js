@@ -13,9 +13,7 @@ exports.Director = function() {
 			currentScene.handleEvent(event);
 		});
 		currentScene.update(msDuration);
-		display._context.webkitImageSmoothingEnabled = false;
 		currentScene.draw(display);
-		display._context.webkitImageSmoothingEnabled = false;
 		
 		var canv = document.getElementById("gjs-canvas");
 		//cq(canv).matchPalette(palettes.gameboy);
@@ -38,8 +36,6 @@ exports.Director = function() {
     };
 
     var display = gamejs.display.setMode([config.WIDTH * config.SCALE, config.HEIGHT * config.SCALE], gamejs.display.DISABLE_SMOOTHING);
-    //var display = gamejs.display.setMode([config.WIDTH, config.HEIGHT]);
-	display._context.webkitImageSmoothingEnabled = false;
 	if (config.DEBUG) {
 		console.log('DEBUG');
 	}

@@ -11,7 +11,7 @@ var config = require('./project/config');
 
 function main() {
     var director = new Director();
-    var firstScene = new Scene(director, config.scenes.debug);
+    var firstScene = new Scene(director, config.scenes.title);
     director.start(firstScene);
     return;
 }

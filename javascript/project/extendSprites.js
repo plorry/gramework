@@ -47,11 +47,11 @@ var extendShooter = exports.extendShooter = function(obj) {
 	obj.prototype.dying = 0;
 	obj.prototype.damage = 0;
 	obj.prototype._hurt = 0;
+	obj.prototype.nextGun = 0;
 	obj.prototype.shotCounter = 0;
 	obj.prototype._canShoot = true;
 	obj.prototype._isShooting = false;
-	obj.prototype.guns = [];
-	obj.prototype.hurtType
+	obj.prototype.hurtTime = 100;
 	obj.prototype.canShoot = function() {
 		return this._canShoot;
 	};
@@ -59,13 +59,35 @@ var extendShooter = exports.extendShooter = function(obj) {
 		return this._isShooting;
 	};
 	
+	obj.prototype.hasGun = function() {
+		return this.guns.length > 0;
+	};
+	
+	obj.prototype.checkEmpty = function() {
+		if (this.guns.length > 0) {
+			if (this.guns[0] <= 0) {
+				this.guns.splice(0,1);
+			}
+			if (this.guns[1] <= 0) {
+				this.guns.splice(1,1);
+			}
+		}
+		return;
+	};
+	
 	obj.prototype.action1 = function() {
 		var _name = "shoot";
 		
-		if (this.canShoot() && !this.isHurt()) {
+		if (this.canShoot() && !this.isHurt() && (!this.playerControlled || this.hasGun())) {
 			this.shotCounter = 300;
+			if (this.playerControlled && this.guns.length > 0) {
+				this.shotCounter = 300 * (1/this.guns.length);
+			}
 			this._isShooting = true;
 			this._canShoot = false;
+			if (this.guns.length > 0) {
+				this.guns[0] -= 1;
+			}
 			sounds.shoot();
 			elements.spawnShot(this);
 
@@ -106,6 +128,8 @@ var extendShooter = exports.extendShooter = function(obj) {
 		
 	obj.prototype.update = function(msDuration) {
 		oldUpdate.call(this, msDuration);
+		
+		this.checkEmpty();
 		
 		if (this.shotCounter > 0) {
 			this.stop();
@@ -155,6 +179,20 @@ var extendShooter = exports.extendShooter = function(obj) {
 					}
 				}
 			}
+			
+			var collisions = gamejs.sprite.spriteCollide(this, this.scene.objects_list, false);
+				
+			for (var i = 0; i < collisions.length; i++) {
+				if (collisions[i].type == 'gun') {
+					if (this.guns.length < 2) {
+						collisions[i].kill();
+						console.log(this);
+						this.guns.push(Math.floor(Math.random() * 10) + 2);
+						console.log(this.scene.player_objects.sprites()[0].guns);
+						console.log(this.scene.player_objects.sprites()[1].guns);
+					}
+				}
+			}
 		}
 		
 		if (!this.playerControlled) {
@@ -176,7 +214,7 @@ var extendShooter = exports.extendShooter = function(obj) {
 						var random = Math.floor(Math.random() * 30);
 						if (random == 5 && this.canShoot()) {
 							this.action1();
-						};
+						}
 					}
 				}
 			}			
@@ -192,14 +230,15 @@ var extendShooter = exports.extendShooter = function(obj) {
 		}
 		
 		if (this.dying >= 800) {
-			elements.spawnGun(this);
+			var allGuns = this.scene.player_objects.sprites()[0].guns.length;
+			allGuns += this.scene.player_objects.sprites()[1].guns.length;
+			var chance = Math.floor(Math.random() * (5 - allGuns));
+			console.log(chance);
+			if (chance == 0) {
+				elements.spawnGun(this);
+			}
 			this.die();
 		}
-		
-		/*
-		if (gamejs.sprite.spriteCollide()) {
-			
-		}*/
 		
 		return;
 	};

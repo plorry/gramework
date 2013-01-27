@@ -12,8 +12,16 @@ exports.SCALE = 2;
 var triggers = require('./triggerElements').triggers;
 
 exports.scenes = {
-	'debug': {
+	'title': {
+		'image': exports.STATIC_PATH + 'images/backgrounds/test.png',
+		'triggers': null,
+		'cutscene': true,
+		'level': null,
+		'next': 'level1'
+	},
+	'level1': {
 		'image': exports.STATIC_PATH + 'images/backgrounds/office-boardroom.png',
-		'triggers': triggers
+		'triggers': triggers.level_1,
+		'level': 1
 	}
 };

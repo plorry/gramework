@@ -13,6 +13,7 @@ var Object = exports.Object = function(pos, options) {
 	Object.superConstructor.apply(this, arguments);
     this.pos = pos || [0,0];
 	this.spriteSheet = new SpriteSheet(options.spriteSheet[0], options.spriteSheet[1]) || null;
+	this.dest = null;
 	if (this.spriteSheet) {
 		this.width = this.spriteSheet.width;
 		this.height = this.spriteSheet.height;
@@ -216,12 +217,16 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 	this.walkSpeed = options.walkSpeed || 1;
 	this.xMultiplier = 1;
 	this.yMultiplier = 1;
-	this.dest = null;
+	this.guns = [];
 	this.choiceCounter = 0;
 	this.boundaryRect = null;
 	this.maxHealth = options.maxHealth || 3;
 	this.hotspot = null;
 	this.holding = new gamejs.sprite.Group();
+	
+	if (this.playerControlled) {
+		this.guns = [10];
+	}
 };
 objects.extend(FourDirection, Object);
 
@@ -233,7 +238,7 @@ FourDirection.prototype.stop = function() {
 	this.movingUp = false;
 	this.movingDown = false;
 	this.dest = null;
-	this.animation.start('static');
+	this.animation.start(this.static_anim);
 	return;
 };
 
@@ -274,9 +279,20 @@ FourDirection.prototype.moveDown = function() {
 
 FourDirection.prototype.update = function(msDuration) {
 	
+	if (!this.playerControlled) {
+		this.guns = [];
+	}
+	
+	if (this.guns.length > 2) {
+		var over = this.guns.length - 2;
+		this.guns.splice(2, over);
+	}
+	
 	this.walking_anim = 'walking';
-	if (this.guns.length != 0) {
+	this.static_anim = 'static';
+	if (this.guns.length > 0) {
 		this.walking_anim += this.guns.length;
+		this.static_anim += this.guns.length;
 	}
 	
 	var topleft = this.rect.topleft;
@@ -337,8 +353,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.right >= this.boundaryRect.right) {
 				this.x_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 		if (this.movingLeft) {
@@ -347,8 +363,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.left <= this.boundaryRect.left) {
 				this.x_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 		if (this.movingUp) {
@@ -357,8 +373,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.top <= this.boundaryRect.top) {
 				this.y_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 		if (this.movingDown) {
@@ -367,8 +383,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.bottom >= this.boundaryRect.bottom) {
 				this.y_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 	}
@@ -379,15 +395,15 @@ FourDirection.prototype.update = function(msDuration) {
 		this.y_speed = 0;
 	}
 	
-	if (this.animation.spec['walking']){
-		if ((this.movingUp || this.movingDown || this.movingRight || this.movingLeft) && this.animation.currentAnimation == 'static') {
-			this.animation.start('walking');
+	if (this.animation.spec[this.walking_anim]){
+		if ((this.movingUp || this.movingDown || this.movingRight || this.movingLeft) && this.animation.currentAnimation == this.static_anim) {
+			this.animation.start(this.walking_anim);
 		}
 	}
 	
 	if (!this.movingUp && !this.movingDown && !this.movingLeft && !this.movingRight) {
-		if (this.animation.currentAnimation == 'walking') {
-			this.animation.start('static');
+		if (this.animation.currentAnimation == this.walking_anim) {
+			this.animation.start(this.static_anim);
 		}
 	}
 	
@@ -401,7 +417,7 @@ FourDirection.prototype.update = function(msDuration) {
 	Object.prototype.update.apply(this, arguments);
 };
 
-FourDirection.prototype.goTo = function(pos) {
+Object.prototype.goTo = function(pos) {
 	this.dest = pos;
 };
 
@@ -493,5 +509,6 @@ FourDirection.prototype.handleEvent = function(event) {
 var Pickup = exports.Pickup = function(pos, options, object) {
 	Pickup.superConstructor.apply(this, arguments);
 	this.parent = object;
+	this.type = options.type || null;
 };
 objects.extend(Pickup, Object);

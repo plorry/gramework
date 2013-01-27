@@ -4,6 +4,7 @@ var Camera = require('./camera').Camera;
 var elements = require('./project/elements');
 var uiElements = require('./project/uiElements');
 var soundElements = require('./project/soundElements');
+var TextArea = require('./ui').TextArea;
 
 var font = new gamejs.font.Font('20px Lucida Console');
 
@@ -11,13 +12,14 @@ var font = new gamejs.font.Font('20px Lucida Console');
 
 var Scene = exports.Scene = function(director, sceneConfig) {
 	this.objects_list = new gamejs.sprite.Group();
+	this.director = director;
 	this.player_objects = new gamejs.sprite.Group();
 	this.npc_list = new gamejs.sprite.Group();
 	this.uiElements = new gamejs.sprite.Group();
-	this.objects_list.add(elements.getSprites());
-	this.npc_list.add(elements.getNPCs());
-	this.player_objects.add(elements.getPlayers());
-	this.uiElements.add(uiElements.getElements());
+	this.objects_list.add(elements.getSprites(sceneConfig.level));
+	this.npc_list.add(elements.getNPCs(sceneConfig.level));
+	this.player_objects.add(elements.getPlayers(sceneConfig.level));
+	this.uiElements.add(uiElements.getElements(sceneConfig.level));
 	soundElements.loadSounds();
 	this.camera = new Camera(this, true);
 	this._frozen = false;
@@ -32,7 +34,16 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 };
 
 Scene.prototype.initScene = function(sceneConfig) {
+	this.cutscene = sceneConfig.cutscene || false;
 	this.image = gamejs.image.load(sceneConfig.image);
+	this.next = sceneConfig.next || null;
+	
+	/*
+	this.textArea = new TextArea({
+		scrolling: true,
+		text: "test test"
+	});
+	*/
 	this.triggers = [];
 	
 	for (trigger in sceneConfig.triggers) {
@@ -75,6 +86,7 @@ Scene.prototype.draw = function(display) {
 	
 	var screen = this.camera.draw();
 	this.uiElements.draw(screen);
+	//this.textArea.draw(screen);
 	
 	var size = screen.getSize();
 	
@@ -94,9 +106,14 @@ Scene.prototype.handleEvent = function(event) {
 	
 	if (event.type === gamejs.event.KEY_DOWN) {
 		if (event.key === gamejs.event.K_SPACE) {
-			//LOG STUFF HERE
-			this.camera.zoomTo(2);
-			console.log(this.triggers);
+			if (this.cutscene) {
+				this.director.replaceScene(new Scene(this.director, config.scenes[this.next]));
+			} else {
+				//LOG STUFF HERE
+				this.camera.zoomTo(2);
+				console.log(this.player_objects.sprites()[0].guns);
+				console.log(this.player_objects.sprites()[1].guns);
+			}
 		}
 	}
 	if (event.type === gamejs.event.KEY_UP) {
@@ -136,6 +153,7 @@ Scene.prototype.update = function(msDuration) {
 	//reorder the sprites so the lower ones appear in foreground
 	var scene = this;
 	var triggers = this.triggers;
+	//this.textArea.update(msDuration);
 	//Check each trigger for its activating condition - update active triggers - kill triggers that are done
 	this.triggers.forEach(function(trigger){
 		var index = triggers.indexOf(trigger);

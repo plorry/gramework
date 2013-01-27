@@ -37,14 +37,16 @@ var testKillEvent = function(scene) {
 };
 
 exports.triggers = {
-	testTrigger: {
-		'condition': x200,
-		'update': spawn12,
-		'killCondition': enemiesDone,
-		'killEvent': testKillEvent
-	},
-	clearScroll: {
-		'condition': enemiesClear,
-		'update': unlockCamera
+	level_1: {
+		testTrigger: {
+			'condition': x200,
+			'update': spawn12,
+			'killCondition': enemiesDone,
+			'killEvent': testKillEvent
+		},
+		clearScroll: {
+			'condition': enemiesClear,
+			'update': unlockCamera
+		}
 	}
 };

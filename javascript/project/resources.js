@@ -7,7 +7,6 @@ var sounds = [
 ];
 
 var images = [
-	config.STATIC_PATH + 'images/backgrounds/background1.jpg',
 	config.STATIC_PATH + 'images/sprites/peter.png',
 	config.STATIC_PATH + 'images/sprites/thug.png',
 	config.STATIC_PATH + 'images/ui/test.png',
@@ -17,7 +16,10 @@ var images = [
 	config.STATIC_PATH + 'images/sprites/enemy-suit02.png',
 	config.STATIC_PATH + 'images/sprites/shot.png',
 	config.STATIC_PATH + 'images/sprites/gun.png',
-	config.STATIC_PATH + 'images/backgrounds/office-boardroom.png'
+	config.STATIC_PATH + 'images/sprites/enemy-hostagetaker.png',
+	
+	config.STATIC_PATH + 'images/backgrounds/office-boardroom.png',
+	config.STATIC_PATH + 'images/backgrounds/test.png'
 ];
 
 var resources = exports.resources = sounds.concat(images);

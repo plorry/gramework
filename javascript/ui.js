@@ -113,3 +113,8 @@ TextArea.prototype.draw = function(display) {
 	display.blit(this.fontSurface, this.pos);
 	return;
 };
+
+TextArea.prototype.start = function(text) {
+	this.currentText = " ";
+	this.text = text;
+};
