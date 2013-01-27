@@ -1,26 +1,35 @@
 var elements = require('./elements');
 var FourDirection = require('../object').FourDirection;
 
-var testCondition = function(scene) {
+var x200 = function(scene) {
 	return (scene.camera.rect.center[0] >= 200);
 };
 
-var testUpdate = function(msDuration, scene) {
-	scene.camera.unfollow();
-	scene.camera.panto([200,0]);
-	scene.spawn(FourDirection, [200,0], elements.thug_opts);
-	scene.spawn(FourDirection, [300,0], elements.thug_opts);
-	scene.spawn(FourDirection, [250,200], elements.thug_opts);
-	scene.spawn(FourDirection, [150,224], elements.thug_opts);
-	scene.spawn(FourDirection, [100,224], elements.thug_opts);
-	scene.spawn(FourDirection, [100,224], elements.thug_opts);
+var enemiesClear = function(scene) {
+	return (scene.npc_list.sprites().length == 0);s
+};
 
-	this.kill = true;
+var spawn12 = function(msDuration, scene) {
+	scene.camera.unfollow();
+	if (this.enemies === undefined) {
+		this.enemies = 12;
+	}
+	if (scene.npc_list.sprites().length < 4) {
+		scene.spawn_many(FourDirection, 1);
+		this.enemies--;
+	}
+
 	return;
 };
 
-var testKill = function(scene) {
-	return (this.kill);
+var unlockCamera = function(msDuration, scene) {
+	scene.scroll = true;
+	this.deactivate();
+	return;
+};
+
+var enemiesDone = function(scene) {
+	return (this.enemies <= 0);
 };
 
 var testKillEvent = function(scene) {
@@ -28,10 +37,14 @@ var testKillEvent = function(scene) {
 };
 
 exports.triggers = {
-	'testTrigger': {
-		'condition': testCondition,
-		'update': testUpdate,
-		'killCondition': testKill,
+	testTrigger: {
+		'condition': x200,
+		'update': spawn12,
+		'killCondition': enemiesDone,
 		'killEvent': testKillEvent
+	},
+	clearScroll: {
+		'condition': enemiesClear,
+		'update': unlockCamera
 	}
 };

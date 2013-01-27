@@ -21,6 +21,7 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 	soundElements.loadSounds();
 	this.camera = new Camera(this, true);
 	this._frozen = false;
+	this.scroll = true;
 
 	var sceneId = sceneId || 0;
 	this.elapsed = 0;
@@ -32,15 +33,15 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 
 Scene.prototype.initScene = function(sceneConfig) {
 	this.image = gamejs.image.load(sceneConfig.image);
-	this.triggers = triggers = [];
+	this.triggers = [];
+	
+	for (trigger in sceneConfig.triggers) {
+		var trig = new Trigger(sceneConfig.triggers[trigger]);
+		this.triggers.push(trig);
+	}
+	
 	var imageSize = this.image.getSize();
     this.view = new gamejs.Surface([imageSize[0], 224]);
-
-	if (sceneConfig.triggers) {
-		sceneConfig.triggers.forEach(function(trigger) {
-			triggers.push(new Trigger(trigger));
-		});
-	}
 		
 	var scene = this;
 	
@@ -78,7 +79,6 @@ Scene.prototype.draw = function(display) {
 	var size = screen.getSize();
 	
 	var scaledScreen = gamejs.transform.scale(screen, [size[0] * config.SCALE, size[1] * config.SCALE]);
-	//var scaledScreen = gamejs.transform.scale(screen, [size[0], size[1]]);
 	
 	display.blit(scaledScreen);
 	
@@ -96,7 +96,7 @@ Scene.prototype.handleEvent = function(event) {
 		if (event.key === gamejs.event.K_SPACE) {
 			//LOG STUFF HERE
 			this.camera.zoomTo(2);
-			console.log(this.camera.dest);
+			console.log(this.triggers);
 		}
 	}
 	if (event.type === gamejs.event.KEY_UP) {
@@ -115,7 +115,15 @@ Scene.prototype.spawn = function(obj, pos, options) {
 	return;
 };
 
-Scene.prototype.spawn_many = function(obj, num, lvl) {
+Scene.prototype.spawn_many = function(obj, num, lvl) {	
+	for (var i = 0; i < num; i ++) {
+		var randOpts = Math.floor(Math.random() * elements.randomEnemies.length);
+		var opts = elements.randomEnemies[randOpts];
+		var side = Math.floor(Math.random() * 2);
+		var y_pos = Math.floor(Math.random() * 70) + 90;
+		var x_pos = (this.camera.rect.left - 10) + (side * (this.camera.rect.width + 10));
+		this.spawn(obj, [x_pos, y_pos], opts);
+	}
 	
 	return;
 };
@@ -137,7 +145,7 @@ Scene.prototype.update = function(msDuration) {
 		if (trigger.isActive()){
 			trigger.update(msDuration, scene);
 		}
-		if (trigger.killCondition(scene)) {
+		if (trigger.killCondition(scene) && trigger.isActive()) {
 			trigger.killEvent(scene);
 			trigger.deactivate();
 			scene.triggers.splice(index,1);
@@ -170,8 +178,9 @@ Scene.prototype.update = function(msDuration) {
 	var x_pos = x_total / this.player_objects.sprites().length;
 	var y_pos = y_total / this.player_objects.sprites().length;
 	
-	this.camera.follow([x_pos, y_pos]);
-	
+	if (this.scroll) {
+		this.camera.follow([x_pos, y_pos]);
+	}
 	return;
 };
 

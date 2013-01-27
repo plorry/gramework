@@ -2,6 +2,7 @@ var gamejs = require('gamejs');
 var config = require('./config');
 var Throwaway = require('../object').Throwaway;
 var FourDirection = require('../object').FourDirection;
+var Object = require('../object').Object;
 var extendShooter = require('./extendSprites').extendShooter;
 
 /*
@@ -18,29 +19,47 @@ var p2_controls = {
 };
 
 var dims = {width:16, height:20};
+var gun_dims = {width:6, height:5};
 
 var thug_file = config.STATIC_PATH + 'images/sprites/enemy-suit01.png';
 var thug2_file = config.STATIC_PATH + 'images/sprites/enemy-suit02.png';
 var shot_file = config.STATIC_PATH + 'images/sprites/shot.png';
 var woo_file = config.STATIC_PATH + 'images/sprites/john-woo.png';
 var chow_file = config.STATIC_PATH + 'images/sprites/chow-yun-fat.png';
+var gun_file = config.STATIC_PATH + 'images/sprites/gun.png';
 
+var default_anims = {
+	'static': [0]
+};
 var thug_anims = {
 	'static': [0],
 	'walking': [1,4],
-	'hurt1': [5]
+	'hurt1': [5],
+	'dying': [10, 17, false]
 };
 var woo_anims = {
 	'static': [0],
 	'walking': [3,6],
+	'static-1': [1],
+	'static-2': [2],
+	'walking-1': [7-10],
+	'walking-2': [11-14],
+	'static-3': [15],
+	'hurt1': [16]
 };
 var shot_anims = {
-	fps: 12,
+	fps: 20,
 	'static': [0,2]
 };
 
 var thug_opts = exports.thug_opts = {
 	spriteSheet: [thug_file, dims],
+	animation: thug_anims,
+	playerControlled: false,
+	walkSpeed: 1
+};
+var thug2_opts = exports.thug_opts = {
+	spriteSheet: [thug2_file, dims],
 	animation: thug_anims,
 	playerControlled: false,
 	walkSpeed: 1
@@ -56,12 +75,28 @@ var woo_opts = {
 	playerControlled: true
 };
 
+var gun_opts = {
+	spriteSheet: [gun_file, gun_dims],
+	animation: default_anims
+};
+
 var spawnShot = exports.spawnShot = function(obj) {
-	shot = new Throwaway(obj.hotspot, shot_opts, obj);
+	var shot = new Throwaway(obj.hotspot, shot_opts, obj);
 	shot.setScene(obj.scene);
 	obj.scene.objects_list.add(shot);
 	shot.lookingRight = !(obj.lookingRight);
 };
+
+var spawnGun = exports.spawnGun = function(obj) {
+	var gun = new Object(obj.rect.bottomleft, gun_opts, obj);
+	gun.setScene(obj.scene);
+	obj.scene.objects_list.add(gun);
+};
+
+var randomEnemies = exports.randomEnemies = [
+	thug_opts,
+	thug2_opts
+];
 
 var getSprites = exports.getSprites = function() {
 	var sprites = [];
@@ -75,7 +110,6 @@ var getSprites = exports.getSprites = function() {
 	chow_opts.spriteSheet = [chow_file, dims];
 	
 	chow = new FourDirection([35,110], chow_opts);
-		
 	thug = new FourDirection([15,120], thug_opts);
 	thug_2 = new FourDirection([35,130], thug_opts);
 	

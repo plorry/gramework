@@ -135,8 +135,10 @@ Object.prototype.inControl = function() {
 Object.prototype.draw = function(display) {
 	//cq(this.image._canvas).matchPalette(palettes.simple);
 	
-	if (this.spriteSheet) {	
-		gamejs.sprite.Sprite.prototype.draw.apply(this, arguments);
+	if (this.spriteSheet) {
+		if (this.image) {
+			gamejs.sprite.Sprite.prototype.draw.apply(this, arguments);
+		};
 	} else {
 		draw.rect(display, "#000FFF", new gamejs.Rect(this.pos, [5,5]));
 	}
@@ -162,8 +164,8 @@ var defaultMapping = {
 	'RIGHT': gamejs.event.K_RIGHT,
 	'UP': gamejs.event.K_UP,
 	'DOWN': gamejs.event.K_DOWN,
-	'BUTTON1': gamejs.event.K_CTRL,
-	'BUTTON2': gamejs.event.K_SHIFT
+	'BUTTON1': gamejs.event.K_p,
+	'BUTTON2': gamejs.event.K_l
 };
 
 /*
@@ -219,6 +221,7 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 	this.boundaryRect = null;
 	this.maxHealth = options.maxHealth || 3;
 	this.hotspot = null;
+	this.holding = new gamejs.sprite.Group();
 };
 objects.extend(FourDirection, Object);
 
@@ -234,7 +237,7 @@ FourDirection.prototype.stop = function() {
 	return;
 };
 
-FourDirection.prototype.setBoundary = function(rect) {
+Object.prototype.setBoundary = function(rect) {
 	this.boundaryRect = rect;
 	return;
 };
@@ -244,7 +247,7 @@ FourDirection.prototype.clearBoundary = function() {
 	return;
 };
 
-FourDirection.prototype.lookAt = function(obj) {
+Object.prototype.lookAt = function(obj) {
 	this.lookingAt = obj;
 	return;
 };
@@ -271,6 +274,11 @@ FourDirection.prototype.moveDown = function() {
 
 FourDirection.prototype.update = function(msDuration) {
 	
+	this.walking_anim = 'walking';
+	if (this.guns.length != 0) {
+		this.walking_anim += this.guns.length;
+	}
+	
 	var topleft = this.rect.topleft;
 	if (this.lookingRight) {
 		this.hotspot = [topleft[0] + 14, topleft[1] + 5];
@@ -282,7 +290,7 @@ FourDirection.prototype.update = function(msDuration) {
 	if (!this.playerControlled) {
 		this.choiceCounter += msDuration;
 		
-		if (!this.lookingAt) {
+		if (!this.lookingAt && this.animation.currentAnimation != 'dying') {
 			this.lookingAt = this.scene.player_objects.sprites()[0];
 		}
 	}
@@ -315,26 +323,10 @@ FourDirection.prototype.update = function(msDuration) {
 		}
 		
 		var arrive = (this.rect.collidePoint(this.dest));
-		/*
-		if (xClose) {
-			this.movingRight = false;
-			this.movingLeft = false;
-			this.x_speed = 0;
-			this.realRect.center[0] = this.dest[0];
-			console.log('yep');
-		}
-		if (yClose) {
-			this.movingUp = false;
-			this.movingDown = false;
-			this.y_speed = 0;
-			this.realRect.center[1] = this.dest[1];
-			console.log('yep');
-		}*/
-		//I've arrived!
+
 		if (arrive) {
 			this.stop();
 			this.restoreControl();
-			console.log('yop');
 		}
 	}
 	
@@ -394,7 +386,9 @@ FourDirection.prototype.update = function(msDuration) {
 	}
 	
 	if (!this.movingUp && !this.movingDown && !this.movingLeft && !this.movingRight) {
-		this.animation.start('static');
+		if (this.animation.currentAnimation == 'walking') {
+			this.animation.start('static');
+		}
 	}
 	
 	if (this.choiceCounter >= 1000) {
@@ -496,6 +490,8 @@ FourDirection.prototype.handleEvent = function(event) {
 	}
 };
 
-var Pickup = exports.Pickup = function(pos, options) {
-	
-}
+var Pickup = exports.Pickup = function(pos, options, object) {
+	Pickup.superConstructor.apply(this, arguments);
+	this.parent = object;
+};
+objects.extend(Pickup, Object);

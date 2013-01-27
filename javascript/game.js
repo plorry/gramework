@@ -18,7 +18,7 @@ exports.Director = function() {
 		display._context.webkitImageSmoothingEnabled = false;
 		
 		var canv = document.getElementById("gjs-canvas");
-		//cq(canv).matchPalette(palettes.simple);
+		//cq(canv).matchPalette(palettes.gameboy);
 		
 		return;
 	};

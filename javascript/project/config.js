@@ -14,6 +14,6 @@ var triggers = require('./triggerElements').triggers;
 exports.scenes = {
 	'debug': {
 		'image': exports.STATIC_PATH + 'images/backgrounds/office-boardroom.png',
-		'triggers': [triggers.testTrigger]
+		'triggers': triggers
 	}
 };

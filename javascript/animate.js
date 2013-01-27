@@ -18,6 +18,7 @@ var Animation = exports.Animation = function(spriteSheet, animationSpec) {
 };
 
 Animation.prototype.start = function(animation) {
+	this.loopFinished = false;
     this.currentAnimation = animation;
     this.currentFrame = this.spec[animation][0];
     this.currentFrameDuration = 0;
