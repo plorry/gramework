@@ -43,6 +43,7 @@ var Object = exports.Object = function(pos, options) {
     this.bounce = 0.8;
 	
 	this._inControl = true;
+	this.isArcing = false;
 	
 	this.count = 0;
     
@@ -80,7 +81,11 @@ Object.prototype.restoreControl = function() {
 Object.prototype.update = function(msDuration) {
 	this.x_accel = 0;
     this.y_accel = 0;
-
+	
+	if (this.isArcing) {
+		this.y_accel = 0.2;
+	}
+	
     for (var i = 0; i < this.behaviours.length; i++) {
         this.behaviours[i].update(this);
     }
@@ -126,6 +131,10 @@ Object.prototype.update = function(msDuration) {
 };
 
 Object.prototype.arcTo = function(dest) {
+	this.isArcing = true;
+	this.y_speed = -3;
+	this.x_speed = 1;
+	
 	return;
 };
 
@@ -222,7 +231,7 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 	this.boundaryRect = null;
 	this.maxHealth = options.maxHealth || 3;
 	this.hotspot = null;
-	this.holding = new gamejs.sprite.Group();
+	this.holding = null;
 	
 	if (this.playerControlled) {
 		this.guns = [10];
@@ -508,7 +517,26 @@ FourDirection.prototype.handleEvent = function(event) {
 
 var Pickup = exports.Pickup = function(pos, options, object) {
 	Pickup.superConstructor.apply(this, arguments);
-	this.parent = object;
+	this.parent = object || null;
 	this.type = options.type || null;
+	this.heldBy = null;
+	this.available = true;
 };
 objects.extend(Pickup, Object);
+
+Pickup.prototype.update = function(msDuration) {
+	Object.prototype.update.apply(this, arguments);
+	
+	if (this.heldBy) {
+		if (this.heldBy.lookingRight) {
+			var offset = -15;
+		} else {
+			var offset = 15;
+		}
+		this.realRect.topleft = [this.heldBy.hotspot[0] + offset, this.heldBy.hotspot[1] + 6];
+	}
+	
+	if (this.isArcing) {
+		this.available = false;
+	}
+};

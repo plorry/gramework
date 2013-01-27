@@ -176,26 +176,46 @@ var extendShooter = exports.extendShooter = function(obj) {
 					if (this.collisionRect.collideLine(npc.shots[j].pointA, npc.shots[j].pointB)
 						&& !this.isHurt() && npc.shots[j].playerShot == false) {
 						this.crouch();
+						if (this.holding != null) {
+							this.holding.heldBy = null;
+							this.holding.arcTo([this.rect.center[0] -10, this.rect.center[1]]);
+							this.holding = null;
+						}
 					}
 				}
 			}
 			
 			var collisions = gamejs.sprite.spriteCollide(this, this.scene.objects_list, false);
-				
+			
+			if (this.holding != null) {
+				var canHold = 1;
+			} else {
+				var canHold = 2;
+			}
+			
 			for (var i = 0; i < collisions.length; i++) {
 				if (collisions[i].type == 'gun') {
-					if (this.guns.length < 2) {
+					if (this.guns.length < canHold) {
 						collisions[i].kill();
-						console.log(this);
 						this.guns.push(Math.floor(Math.random() * 10) + 2);
-						console.log(this.scene.player_objects.sprites()[0].guns);
-						console.log(this.scene.player_objects.sprites()[1].guns);
 					}
+				} else if (collisions[i].type == 'case' && collisions[i].available) {
+					this.holding = collisions[i];
+					collisions[i].heldBy = this;
 				}
 			}
 		}
 		
 		if (!this.playerControlled) {
+			var collisions = gamejs.sprite.spriteCollide(this, this.scene.objects_list, false);
+			
+			for (var i = 0; i < collisions.length; i++) {
+				if (collisions[i].type == 'case' && collisions[i].available) {
+					this.holding = collisions[i];
+					collisions[i].heldBy = this;
+				}
+			}
+			
 			this._lifted1 = true;
 			for (var i = 0; i < this.scene.player_objects.sprites().length; i++) {
 				var player = this.scene.player_objects.sprites()[i];
@@ -238,6 +258,10 @@ var extendShooter = exports.extendShooter = function(obj) {
 				elements.spawnGun(this);
 			}
 			this.die();
+		}
+		
+		if (this.holding != null && this.guns.length == 2) {
+			this.guns.splice(1,1);
 		}
 		
 		return;

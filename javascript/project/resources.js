@@ -16,6 +16,7 @@ var images = [
 	config.STATIC_PATH + 'images/sprites/enemy-suit02.png',
 	config.STATIC_PATH + 'images/sprites/shot.png',
 	config.STATIC_PATH + 'images/sprites/gun.png',
+	config.STATIC_PATH + 'images/sprites/briefcase.png',
 	config.STATIC_PATH + 'images/sprites/enemy-hostagetaker.png',
 	
 	config.STATIC_PATH + 'images/backgrounds/office-boardroom.png',

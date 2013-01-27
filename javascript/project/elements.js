@@ -20,6 +20,7 @@ var p2_controls = {
 
 var dims = {width:16, height:20};
 var gun_dims = {width:6, height:5};
+var case_dims = {width: 10, height: 8};
 
 var thug_file = config.STATIC_PATH + 'images/sprites/enemy-suit01.png';
 var thug2_file = config.STATIC_PATH + 'images/sprites/enemy-suit02.png';
@@ -28,6 +29,7 @@ var woo_file = config.STATIC_PATH + 'images/sprites/john-woo.png';
 var chow_file = config.STATIC_PATH + 'images/sprites/chow-yun-fat.png';
 var gun_file = config.STATIC_PATH + 'images/sprites/gun.png';
 var hostage_file = config.STATIC_PATH + 'images/sprites/enemy-hostagetaker.png';
+var case_file =  config.STATIC_PATH + 'images/sprites/briefcase.png';
 
 var default_anims = {
 	'static': [0]
@@ -93,6 +95,11 @@ var gun_opts = {
 	animation: default_anims,
 	type: 'gun'
 };
+var case_opts = {
+	spriteSheet: [case_file, case_dims],
+	animation: default_anims,
+	type: 'case'
+};
 
 var spawnShot = exports.spawnShot = function(obj) {
 	var shot = new Throwaway(obj.hotspot, shot_opts, obj);
@@ -120,7 +127,7 @@ var getSprites = exports.getSprites = function(stage) {
 			extendShooter(FourDirection);
 			
 			woo = new FourDirection([0,90], woo_opts);
-			
+			var briefcase = new Pickup([128, 112], case_opts);
 			var chow_opts = woo_opts;
 			chow_opts.controlMapping = p2_controls;
 			chow_opts.spriteSheet = [chow_file, dims];
@@ -136,6 +143,7 @@ var getSprites = exports.getSprites = function(stage) {
 			sprites.push(chow);
 			sprites.push(thug);
 			sprites.push(thug_2);
+			sprites.push(briefcase);
 			break;
 	}
 	return sprites;
