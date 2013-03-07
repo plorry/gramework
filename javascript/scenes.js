@@ -2,9 +2,9 @@ var gamejs = require('gamejs');
 var config = require('./project/config');
 var Camera = require('./camera').Camera;
 var elements = require('./project/elements');
-//var Map = require('./maps').Map;
 var uiElements = require('./project/uiElements');
 var soundElements = require('./project/soundElements');
+var TextArea = require('./ui').TextArea;
 
 var font = new gamejs.font.Font('20px Lucida Console');
 
@@ -12,16 +12,18 @@ var font = new gamejs.font.Font('20px Lucida Console');
 
 var Scene = exports.Scene = function(director, sceneConfig) {
 	this.objects_list = new gamejs.sprite.Group();
+	this.director = director;
 	this.player_objects = new gamejs.sprite.Group();
 	this.npc_list = new gamejs.sprite.Group();
 	this.uiElements = new gamejs.sprite.Group();
-	this.objects_list.add(elements.getSprites());
-	this.npc_list.add(elements.getNPCs());
-	this.player_objects.add(elements.getPlayers());
-	this.uiElements.add(uiElements.getElements());
+	this.objects_list.add(elements.getSprites(sceneConfig.level));
+	this.npc_list.add(elements.getNPCs(sceneConfig.level));
+	this.player_objects.add(elements.getPlayers(sceneConfig.level));
+	this.uiElements.add(uiElements.getElements(sceneConfig.level));
 	soundElements.loadSounds();
 	this.camera = new Camera(this, true);
 	this._frozen = false;
+	this.scroll = true;
 
 	var sceneId = sceneId || 0;
 	this.elapsed = 0;
@@ -32,23 +34,28 @@ var Scene = exports.Scene = function(director, sceneConfig) {
 };
 
 Scene.prototype.initScene = function(sceneConfig) {
+	this.cutscene = sceneConfig.cutscene || false;
 	this.image = gamejs.image.load(sceneConfig.image);
-	if (this.image) this.image._context.webkitImageSmoothingEnabled = false;
-	this.triggers = triggers = [];
-	var imageSize = this.image.getSize();
-	this.view = new gamejs.Surface([imageSize[0], 224]);
-
-	if (sceneConfig.triggers) {
-		sceneConfig.triggers.forEach(function(trigger) {
-			triggers.push(new Trigger(trigger));
-		});
+	this.next = sceneConfig.next || null;
+	
+	/*
+	this.textArea = new TextArea({
+		scrolling: true,
+		text: "test test"
+	});
+	*/
+	this.triggers = [];
+	
+	for (trigger in sceneConfig.triggers) {
+		var trig = new Trigger(sceneConfig.triggers[trigger]);
+		this.triggers.push(trig);
 	}
 	
-	// setup the scene
-	// this.mapfile = sceneConfig.map || [];
-	// this.map = new Map('../static/maps/boardroom.tmx');
-
+	var imageSize = this.image.getSize();
+    this.view = new gamejs.Surface([imageSize[0], 224]);
+		
 	var scene = this;
+	
 	this.objects_list.forEach(function(object) {
 		object.setScene(scene);
 	});
@@ -75,18 +82,15 @@ Scene.prototype.draw = function(display) {
 	if (this.image) {
 		this.view.blit(this.image);
 	}
-
-	// this.map.draw(this.view);
-
 	this.objects_list.draw(this.view);
 	
 	var screen = this.camera.draw();
 	this.uiElements.draw(screen);
+	//this.textArea.draw(screen);
 	
 	var size = screen.getSize();
 	
 	var scaledScreen = gamejs.transform.scale(screen, [size[0] * config.SCALE, size[1] * config.SCALE]);
-	//var scaledScreen = gamejs.transform.scale(screen, [size[0], size[1]]);
 	
 	display.blit(scaledScreen);
 	
@@ -102,9 +106,14 @@ Scene.prototype.handleEvent = function(event) {
 	
 	if (event.type === gamejs.event.KEY_DOWN) {
 		if (event.key === gamejs.event.K_SPACE) {
-			//LOG STUFF HERE
-			this.camera.zoomTo(2);
-			console.log(this.camera.dest);
+			if (this.cutscene) {
+				this.director.replaceScene(new Scene(this.director, config.scenes[this.next]));
+			} else {
+				//LOG STUFF HERE
+				this.camera.zoomTo(2);
+				console.log(this.player_objects.sprites()[0].guns);
+				console.log(this.player_objects.sprites()[1].guns);
+			}
 		}
 	}
 	if (event.type === gamejs.event.KEY_UP) {
@@ -123,7 +132,15 @@ Scene.prototype.spawn = function(obj, pos, options) {
 	return;
 };
 
-Scene.prototype.spawn_many = function(obj, num, lvl) {
+Scene.prototype.spawn_many = function(obj, num, lvl) {	
+	for (var i = 0; i < num; i ++) {
+		var randOpts = Math.floor(Math.random() * elements.randomEnemies.length);
+		var opts = elements.randomEnemies[randOpts];
+		var side = Math.floor(Math.random() * 2);
+		var y_pos = Math.floor(Math.random() * 70) + 90;
+		var x_pos = (this.camera.rect.left - 10) + (side * (this.camera.rect.width + 10));
+		this.spawn(obj, [x_pos, y_pos], opts);
+	}
 	
 	return;
 };
@@ -136,24 +153,22 @@ Scene.prototype.update = function(msDuration) {
 	//reorder the sprites so the lower ones appear in foreground
 	var scene = this;
 	var triggers = this.triggers;
+	//this.textArea.update(msDuration);
 	//Check each trigger for its activating condition - update active triggers - kill triggers that are done
 	this.triggers.forEach(function(trigger){
 		var index = triggers.indexOf(trigger);
 		if (trigger.condition(scene)) {
 			trigger.activate();
 		}
-		globaltrigger = trigger;
 		if (trigger.isActive()){
 			trigger.update(msDuration, scene);
 		}
-		if (trigger.killCondition(scene)) {
+		if (trigger.killCondition(scene) && trigger.isActive()) {
 			trigger.killEvent(scene);
 			trigger.deactivate();
 			scene.triggers.splice(index,1);
 		}
 	});
-
-	// this.map.update(msDuration);
 	
 	this.objects_list._sprites.sort(order);
 	if (!this.isFrozen()){
@@ -181,8 +196,9 @@ Scene.prototype.update = function(msDuration) {
 	var x_pos = x_total / this.player_objects.sprites().length;
 	var y_pos = y_total / this.player_objects.sprites().length;
 	
-	this.camera.follow([x_pos, y_pos]);
-	
+	if (this.scroll) {
+		this.camera.follow([x_pos, y_pos]);
+	}
 	return;
 };
 

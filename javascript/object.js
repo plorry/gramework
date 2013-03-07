@@ -13,6 +13,7 @@ var Object = exports.Object = function(pos, options) {
 	Object.superConstructor.apply(this, arguments);
     this.pos = pos || [0,0];
 	this.spriteSheet = new SpriteSheet(options.spriteSheet[0], options.spriteSheet[1]) || null;
+	this.dest = null;
 	if (this.spriteSheet) {
 		this.width = this.spriteSheet.width;
 		this.height = this.spriteSheet.height;
@@ -23,6 +24,8 @@ var Object = exports.Object = function(pos, options) {
 	this.rect = new gamejs.Rect(this.pos, [this.width, this.height]);
 	this.realRect = new gamejs.Rect(this.rect);
 	this.collisionRect = new gamejs.Rect([this.rect.left+1, this.rect.top+1],[this.rect.width-2, this.rect.height-2]);
+	
+	this.static_anim = 'static';
 	
 	this.scene = null;
 	
@@ -42,6 +45,7 @@ var Object = exports.Object = function(pos, options) {
     this.bounce = 0.8;
 	
 	this._inControl = true;
+	this.isArcing = false;
 	
 	this.count = 0;
     
@@ -79,7 +83,11 @@ Object.prototype.restoreControl = function() {
 Object.prototype.update = function(msDuration) {
 	this.x_accel = 0;
     this.y_accel = 0;
-
+	
+	if (this.isArcing) {
+		this.y_accel = 0.2;
+	}
+	
     for (var i = 0; i < this.behaviours.length; i++) {
         this.behaviours[i].update(this);
     }
@@ -125,6 +133,10 @@ Object.prototype.update = function(msDuration) {
 };
 
 Object.prototype.arcTo = function(dest) {
+	this.isArcing = true;
+	this.y_speed = -3;
+	this.x_speed = 1;
+	
 	return;
 };
 
@@ -133,11 +145,12 @@ Object.prototype.inControl = function() {
 };
 
 Object.prototype.draw = function(display) {
-	if(this.image) this.image._context.webkitImageSmoothingEnabled = false;
 	//cq(this.image._canvas).matchPalette(palettes.simple);
 	
-	if (this.spriteSheet) {	
-		gamejs.sprite.Sprite.prototype.draw.apply(this, arguments);
+	if (this.spriteSheet) {
+		if (this.image) {
+			gamejs.sprite.Sprite.prototype.draw.apply(this, arguments);
+		};
 	} else {
 		draw.rect(display, "#000FFF", new gamejs.Rect(this.pos, [5,5]));
 	}
@@ -163,8 +176,8 @@ var defaultMapping = {
 	'RIGHT': gamejs.event.K_RIGHT,
 	'UP': gamejs.event.K_UP,
 	'DOWN': gamejs.event.K_DOWN,
-	'BUTTON1': gamejs.event.K_CTRL,
-	'BUTTON2': gamejs.event.K_SHIFT
+	'BUTTON1': gamejs.event.K_p,
+	'BUTTON2': gamejs.event.K_l
 };
 
 /*
@@ -215,15 +228,20 @@ var FourDirection = exports.FourDirection = function(pos, options) {
 	this.walkSpeed = options.walkSpeed || 1;
 	this.xMultiplier = 1;
 	this.yMultiplier = 1;
-	this.dest = null;
+	this.guns = [];
 	this.choiceCounter = 0;
 	this.boundaryRect = null;
 	this.maxHealth = options.maxHealth || 3;
 	this.hotspot = null;
+	this.holding = null;
+	
+	if (this.playerControlled) {
+		this.guns = [10];
+	}
 };
 objects.extend(FourDirection, Object);
 
-FourDirection.prototype.stop = function() {
+Object.prototype.stop = function() {
 	this.x_speed = 0;
 	this.y_speed = 0;
 	this.movingLeft = false;
@@ -231,11 +249,11 @@ FourDirection.prototype.stop = function() {
 	this.movingUp = false;
 	this.movingDown = false;
 	this.dest = null;
-	this.animation.start('static');
+	this.animation.start(this.static_anim);
 	return;
 };
 
-FourDirection.prototype.setBoundary = function(rect) {
+Object.prototype.setBoundary = function(rect) {
 	this.boundaryRect = rect;
 	return;
 };
@@ -245,7 +263,7 @@ FourDirection.prototype.clearBoundary = function() {
 	return;
 };
 
-FourDirection.prototype.lookAt = function(obj) {
+Object.prototype.lookAt = function(obj) {
 	this.lookingAt = obj;
 	return;
 };
@@ -272,6 +290,22 @@ FourDirection.prototype.moveDown = function() {
 
 FourDirection.prototype.update = function(msDuration) {
 	
+	if (!this.playerControlled) {
+		this.guns = [];
+	}
+	
+	if (this.guns.length > 2) {
+		var over = this.guns.length - 2;
+		this.guns.splice(2, over);
+	}
+	
+	this.walking_anim = 'walking';
+	this.static_anim = 'static';
+	if (this.guns.length > 0) {
+		this.walking_anim += this.guns.length;
+		this.static_anim += this.guns.length;
+	}
+	
 	var topleft = this.rect.topleft;
 	if (this.lookingRight) {
 		this.hotspot = [topleft[0] + 14, topleft[1] + 5];
@@ -283,7 +317,7 @@ FourDirection.prototype.update = function(msDuration) {
 	if (!this.playerControlled) {
 		this.choiceCounter += msDuration;
 		
-		if (!this.lookingAt) {
+		if (!this.lookingAt && this.animation.currentAnimation != 'dying') {
 			this.lookingAt = this.scene.player_objects.sprites()[0];
 		}
 	}
@@ -316,26 +350,10 @@ FourDirection.prototype.update = function(msDuration) {
 		}
 		
 		var arrive = (this.rect.collidePoint(this.dest));
-		/*
-		if (xClose) {
-			this.movingRight = false;
-			this.movingLeft = false;
-			this.x_speed = 0;
-			this.realRect.center[0] = this.dest[0];
-			console.log('yep');
-		}
-		if (yClose) {
-			this.movingUp = false;
-			this.movingDown = false;
-			this.y_speed = 0;
-			this.realRect.center[1] = this.dest[1];
-			console.log('yep');
-		}*/
-		//I've arrived!
+
 		if (arrive) {
 			this.stop();
 			this.restoreControl();
-			console.log('yop');
 		}
 	}
 	
@@ -346,8 +364,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.right >= this.boundaryRect.right) {
 				this.x_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 		if (this.movingLeft) {
@@ -356,8 +374,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.left <= this.boundaryRect.left) {
 				this.x_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 		if (this.movingUp) {
@@ -366,8 +384,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.top <= this.boundaryRect.top) {
 				this.y_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 		if (this.movingDown) {
@@ -376,8 +394,8 @@ FourDirection.prototype.update = function(msDuration) {
 			if (this.boundaryRect && this.rect.bottom >= this.boundaryRect.bottom) {
 				this.y_speed = 0;
 			}
-			if (this.animation.currentAnimation != 'walking') {
-				this.animation.start('walking');
+			if (this.animation.currentAnimation != this.walking_anim) {
+				this.animation.start(this.walking_anim);
 			}
 		}
 	}
@@ -388,14 +406,16 @@ FourDirection.prototype.update = function(msDuration) {
 		this.y_speed = 0;
 	}
 	
-	if (this.animation.spec['walking']){
-		if ((this.movingUp || this.movingDown || this.movingRight || this.movingLeft) && this.animation.currentAnimation == 'static') {
-			this.animation.start('walking');
+	if (this.animation.spec[this.walking_anim]){
+		if ((this.movingUp || this.movingDown || this.movingRight || this.movingLeft) && this.animation.currentAnimation == this.static_anim) {
+			this.animation.start(this.walking_anim);
 		}
 	}
 	
 	if (!this.movingUp && !this.movingDown && !this.movingLeft && !this.movingRight) {
-		this.animation.start('static');
+		if (this.animation.currentAnimation == this.walking_anim) {
+			this.animation.start(this.static_anim);
+		}
 	}
 	
 	if (this.choiceCounter >= 1000) {
@@ -408,7 +428,7 @@ FourDirection.prototype.update = function(msDuration) {
 	Object.prototype.update.apply(this, arguments);
 };
 
-FourDirection.prototype.goTo = function(pos) {
+Object.prototype.goTo = function(pos) {
 	this.dest = pos;
 };
 
@@ -497,6 +517,34 @@ FourDirection.prototype.handleEvent = function(event) {
 	}
 };
 
-var Pickup = exports.Pickup = function(pos, options) {
+var Pickup = exports.Pickup = function(pos, options, object) {
+	Pickup.superConstructor.apply(this, arguments);
+	this.parent = object || null;
+	this.type = options.type || null;
+	this.heldBy = null;
+	this.available = true;
+};
+objects.extend(Pickup, Object);
+
+Pickup.prototype.update = function(msDuration) {
+	Object.prototype.update.apply(this, arguments);
 	
-}
+	if (this.heldBy) {
+		if (this.heldBy.lookingRight) {
+			var offset = -15;
+		} else {
+			var offset = 15;
+		}
+		this.realRect.topleft = [this.heldBy.hotspot[0] + offset, this.heldBy.hotspot[1] + 6];
+	}
+	
+	if (this.isArcing) {
+		this.available = false;
+	}
+	
+	if (this.y_speed >= 3 && this.isArcing) {
+		this.stop();
+		this.isArcing = false;
+		this.available = true;
+	}	
+};

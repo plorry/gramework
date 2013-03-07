@@ -12,7 +12,7 @@ var Element = exports.Element = function(options) {
 	this.size = options.size || [10,10];
 	this.spriteSheet = options.spriteSheet || null;
 	this.margin = options.margin || 0;
-	this.active = options.active || false;
+	this.active = options.active || true;
 	if (this.spriteSheet) {
 		this.size[0] = this.spriteSheet.width;
 		this.size[1] = this.spriteSheet.height;
@@ -112,4 +112,9 @@ TextArea.prototype.draw = function(display) {
 	this.fontSurface._context.webkitImageSmoothingEnabled = false;
 	display.blit(this.fontSurface, this.pos);
 	return;
+};
+
+TextArea.prototype.start = function(text) {
+	this.currentText = " ";
+	this.text = text;
 };
