@@ -92,9 +92,11 @@ Camera.prototype.panto = function(pos) {
 
 Camera.prototype.follow = function(pos) {
 	this.center = pos;
+	this.scene.scroll = true;
 };
 
 Camera.prototype.unfollow = function() {
+	this.scene.scroll = false;
 	this.center = null;
 };
 

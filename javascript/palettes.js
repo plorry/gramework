@@ -21,5 +21,4 @@ var palettes = exports.palettes = {
 	
 	flashing_1: ['#173B0B', '#F7FE2E', '#81F79F', '#CC2EFA', '#FF0080'],
 	flashing_2: ['#6A0888', '#8258FA', '#868A08', '#D0FA58', '#240B3B'],
-	
 };
