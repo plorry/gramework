@@ -1,0 +1,14 @@
+{
+    "name": "gramework",
+    "version": "0.0.1",
+    "description": "modular framework for rapid game development using gamejs",
+    "main": "./lib/gramework.js",
+    "directories": {
+        "lib": "./lib/"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/plorry/gramework.git"
+    }
+}
