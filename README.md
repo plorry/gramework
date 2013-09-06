@@ -11,4 +11,13 @@ Current classes available:
 - Animation class
 - camera, for panning/zooming within scene
 
-Project-specific resources and code go into separate "project" folder.
+Developing locally and using
+===
+
+So you don't have to constantly publish the npm module for gramework. You can
+simply do this:
+
+    $ cd gramework/
+    $ npm pack
+    $ cd /path/to/your/project
+    $ npm install /path/to/gramework/gramework-0.0.1.tgz
