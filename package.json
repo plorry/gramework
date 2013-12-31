@@ -6,6 +6,9 @@
     "directories": {
         "lib": "./lib/"
     },
+    "dependencies": {
+        "underscore": "~1.5.2"
+    },
     "license": "MIT",
     "repository": {
         "type": "git",
