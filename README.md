@@ -1,9 +1,12 @@
 gramework
 =========
 
-modular framework for rapid game development using gamejs
+Modular framework for rapid game development using [GameJs](http://gamejs.org/)
 
-In development
+Installation
+===
+
+    $ npm install git://github.com/plorry/gramework.git
 
 Current classes available:
 - 4-Direction movement object
