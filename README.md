@@ -14,6 +14,13 @@ Current classes available:
 - Animation class
 - camera, for panning/zooming within scene
 
+Test
+===
+
+    $ npm install -g mocha
+    $ mocha ./tests
+
+
 Developing locally and using
 ===
 
