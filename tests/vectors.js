@@ -1,5 +1,7 @@
+/*global describe, it*/
 var assert = require("assert"),
-    vectors = require('../lib/gramework/vectors');
+    gramework = require('../lib/gramework'),
+    vectors = gramework.vectors;
 
 var Vec2d = vectors.Vec2d;
 

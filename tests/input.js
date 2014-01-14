@@ -1,6 +1,8 @@
+/* global describe, it*/
 var assert = require("assert"),
     gamejs = require('gamejs'),
-    input = require('../lib/gramework/input');
+    gramework = require('../lib/gramework'),
+    input = gramework.input;
 
 describe("GameController", function() {
     it("should define default controls", function() {
