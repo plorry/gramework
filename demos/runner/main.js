@@ -71,10 +71,10 @@ _.extend(Player.prototype, Entity.prototype, {
         dt = (dt / 1000);
 
         if (this.onGround && this.isJumping) {
-            var vec = new Vec2d(0, -20);
-            this.velocity.add(vec.mul(dt));
+            this.velocity.setY(-15);
         } else {
-            this.velocity.add(this.world.gravity.mul(dt));
+            var vec = new Vec2d().add(this.world.gravity);
+            this.velocity.add(vec.mul(dt));
         }
 
         this.rect.x += this.velocity.x;
@@ -133,7 +133,7 @@ var World = function(options) {
     this.accel = 5;
     this.speed = 5;
     this.maxSpeed = 55;
-    this.gravity = new Vec2d(0, 100);
+    this.gravity = new Vec2d(0, 50);
 
     this.layers = [
         new Scrollable('./assets/background.png', [1, 0], {speed: 1}),
