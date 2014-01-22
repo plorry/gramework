@@ -15,8 +15,8 @@ var Player = function(options) {
 
     this.world = options.world;
     this.sprite = new animate.SpriteSheet('./assets/runner.png', 32, 64);
-    this.anim = new animate.Animation(this.sprite, "static", {
-        static: {frames: [0, 1, 2, 3, 4, 6, 7], rate: 5.5},
+    this.anim = new animate.Animation(this.sprite, "running", {
+        running: {frames: [0, 1, 2, 3, 4, 6, 7], rate: 5.5},
         jump: {frames: [1, 0, 1, 4], rate: 2.5}
     });
 
@@ -71,7 +71,6 @@ _.extend(Player.prototype, Entity.prototype, {
         dt = (dt / 1000);
 
         if (this.onGround && this.isJumping) {
-            gamejs.log("JUMP!");
             var vec = new Vec2d(0, -20);
             this.velocity.add(vec.mul(dt));
         } else {
@@ -103,6 +102,12 @@ _.extend(Player.prototype, Entity.prototype, {
             }
         }
 
+        if (this.onGround === false) {
+            this.anim.setState("jump");
+        } else {
+            this.anim.setState("running");
+        }
+
         this.isJumping = false;
     },
 
@@ -131,7 +136,7 @@ var World = function(options) {
     this.gravity = new Vec2d(0, 100);
 
     this.layers = [
-        new Scrollable('./assets/bgfar1.png', [1, 0], {speed: 1}),
+        new Scrollable('./assets/background.png', [1, 0], {speed: 1}),
         new Scrollable('./assets/bgnear2.png', [-100, 0], {speed: 55}),
         new Scrollable('./assets/bgnear2.png', [660, 0], {speed: 55}),
     ];
@@ -207,7 +212,7 @@ var main = function() {
 
 gamejs.preload([
     './assets/runner.png',
-    './assets/bgfar1.png',
+    './assets/background.png',
     './assets/bgnear2.png'
 ]);
 gamejs.ready(main);
