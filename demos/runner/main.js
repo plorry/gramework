@@ -16,6 +16,7 @@ var Coin = function(options) {
     Entity.apply(this, arguments);
 
     this.isCoin = true;
+    this.world = options.world;
 
     this.sprite = new animate.SpriteSheet('./assets/coin.png', 32, 32);
     this.anim = new animate.Animation(this.sprite, "static", {
@@ -24,12 +25,18 @@ var Coin = function(options) {
 
     // TODO: Shouldnt need to do this.
     this.image = this.anim.update(0);
+    this.maxSpeed = -4;
 
-    this.velocity = new Vec2d(-4, 0);
+    this.velocity = new Vec2d(-1, 0);
 };
 _.extend(Coin.prototype, Entity.prototype, {
     update: function(dt) {
         this.image = this.anim.update(dt);
+
+        this.velocity.setX(-(this.world.velocity.magnitude() / this.maxSpeed));
+        if (this.velocity.magnitude() >= this.maxSpeed) {
+            this.velocity.truncate(this.maxSpeed);
+        }
 
         this.rect.x += this.velocity.getX();
         this.rect.y += this.velocity.getY();
@@ -57,6 +64,7 @@ CoinEmitter.prototype = {
         this.currentDuration += dt;
         if (this.count > 0 && this.currentDuration >= this.duration) {
             this.world.actors.add(new Coin({
+                world: this.world,
                 x: this.world.width(),
                 y: (this.world.height() / 2.6) + _.random(0, 100)
             }));
