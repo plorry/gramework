@@ -17,7 +17,7 @@ var Hud = require('./hud');
 window.GLOBALS = {
     jump: 13,
     speed: 5,
-    maxSpeed: 55
+    coin: 10
 };
 
 var Coin = function(options) {
@@ -54,7 +54,8 @@ _.extend(Coin.prototype, Entity.prototype, {
 
 var CoinEmitter = function(options) {
     this.alive = true;
-    this.count = _.random(5, 15);
+    // Spawn coins based on GLOBAL setting, with some padding for randomness
+    this.count = _.random(GLOBALS.coin - 5, GLOBALS.coin + 5);
     this.world = options.world;
 
     this.currentDuration = 0;
@@ -65,7 +66,7 @@ var CoinEmitter = function(options) {
 };
 CoinEmitter.prototype = {
     randomDuration: function() {
-        return 1.0 + (0.0-1.0)*Math.random();
+        return (1.0 + (0.0-1.0)*Math.random()) / (this.count + 0.1);
     },
 
     update: function(dt) {
@@ -245,7 +246,7 @@ _.extend(EndScreen.prototype, Scene.prototype, {
     },
     event: function(ev) {
         if (this.controller.handle(ev) === this.controller.controls.reset) {
-            this.world.totalCoins = 0;
+            this.world.timeLeft = 40;
             this.world.score = 0;
             this.world.velocity = new Vec2d(0, 0);
             this.dispatcher.push(this.dispatcher.parent());
@@ -271,8 +272,7 @@ var World = function(options) {
     this.maxSpeed = 55;
     this.gravity = new Vec2d(0, 50);
 
-    // Total amount of coins in this world before we are done.
-    this.maxCoins = 45;
+    this.timeLeft = 40;
     this.totalCoins = 0;
 
     this.layers = [
@@ -290,7 +290,10 @@ _.extend(World.prototype, Scene.prototype, {
 
         var accel = new Vec2d(this.accel, 0);
         this.velocity.add(accel.mul(dt).mul(GLOBALS.speed));
-        this.velocity = this.velocity.truncate(GLOBALS.maxSpeed);
+        this.velocity = this.velocity.truncate(this.maxSpeed);
+
+        // Adjust the game timer.
+        this.timeLeft -= dt;
 
         // Keep a CoinEmitter spawned.
         if (this.coins && this.coins.alive) {
@@ -305,7 +308,7 @@ _.extend(World.prototype, Scene.prototype, {
             this.coins = null;
         }
 
-        if (this.totalCoins >= this.maxCoins) {
+        if (this.timeLeft <= 0) {
             this.onEnd();
         }
 
@@ -383,6 +386,7 @@ var main = function() {
 gamejs.preload([
     './assets/suchwin.png',
     './assets/numbers.png',
+    './assets/numbers-small.png',
     './assets/coin.png',
     './assets/runner.png',
     './assets/background.png',
