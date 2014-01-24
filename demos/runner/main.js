@@ -145,11 +145,11 @@ _.extend(Player.prototype, Entity.prototype, {
         dt = (dt / 1000);
 
         if (this.onGround && this.isJumping) {
-            this.velocity.setY(-15);
-        } else {
-            var vec = new Vec2d().add(this.world.gravity);
-            this.velocity.add(vec.mul(dt));
+            this.velocity.setY(-14);
         }
+
+        var vec = new Vec2d().add(this.world.gravity);
+        this.velocity.add(vec.mul(dt));
 
         this.rect.x += this.velocity.x;
         this.rect.y += this.velocity.y;
@@ -222,7 +222,7 @@ var World = function(options) {
         world: this
     });
     this.actors.add(this.player);
-    this.accel = 5;
+    this.accel = 2;
     this.speed = 5;
     this.maxSpeed = 55;
     this.gravity = new Vec2d(0, 50);
