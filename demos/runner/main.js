@@ -277,6 +277,8 @@ var World = function(options) {
 
     this.layers = [
         new Scrollable('./assets/background.png', [1, 0], {speed: 1}),
+        new Scrollable('./assets/background.png', [560, 0], {speed: 1}),
+        new Scrollable('./assets/background.png', [1160, 0], {speed: 1}),
         new Scrollable('./assets/foreground.png', [-100, 145], {speed: 45}),
         new Scrollable('./assets/foreground.png', [660, 145], {speed: 45}),
     ];
