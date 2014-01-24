@@ -15,7 +15,7 @@ var Hud = require('./hud');
 
 // Global variables for the kids to modify
 window.GLOBALS = {
-    jump: -13,
+    jump: 13,
     speed: 5,
     maxSpeed: 55
 };
@@ -33,7 +33,7 @@ var Coin = function(options) {
 
     // TODO: Shouldnt need to do this.
     this.image = this.anim.update(0);
-    this.maxSpeed = -4;
+    this.maxSpeed = -1;
 
     this.velocity = new Vec2d(-1, 0);
 };
@@ -53,7 +53,6 @@ _.extend(Coin.prototype, Entity.prototype, {
 });
 
 var CoinEmitter = function(options) {
-    gamejs.log("New CoinEmitter");
     this.alive = true;
     this.count = _.random(5, 15);
     this.world = options.world;
@@ -161,7 +160,7 @@ _.extend(Player.prototype, Entity.prototype, {
 
         if (this.onGround && this.isJumping) {
             if (this.jumpTimer <= 0) {
-                this.velocity.setY(GLOBALS.jump);
+                this.velocity.setY(-GLOBALS.jump);
                 this.jumpTimer = this.jumpDelay;
             }
         }
@@ -215,7 +214,6 @@ _.extend(Player.prototype, Entity.prototype, {
     collectCoin: function(coin) {
         coin.kill();
         this.world.score += 1;
-        gamejs.log("Score is", this.world.score);
     },
 
     event: function(ev) {
@@ -274,13 +272,13 @@ var World = function(options) {
     this.gravity = new Vec2d(0, 50);
 
     // Total amount of coins in this world before we are done.
-    this.maxCoins = 15;
+    this.maxCoins = 45;
     this.totalCoins = 0;
 
     this.layers = [
         new Scrollable('./assets/background.png', [1, 0], {speed: 1}),
-        new Scrollable('./assets/foreground.png', [-100, 145], {speed: 55}),
-        new Scrollable('./assets/foreground.png', [660, 145], {speed: 55}),
+        new Scrollable('./assets/foreground.png', [-100, 145], {speed: 45}),
+        new Scrollable('./assets/foreground.png', [660, 145], {speed: 45}),
     ];
     this.velocity = new Vec2d(0, 0);
     this.coins = null;
