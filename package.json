@@ -3,6 +3,9 @@
     "version": "0.0.1",
     "description": "modular framework for rapid game development using gamejs",
     "main": "./lib/gramework.js",
+    "scripts": {
+        "test": "mocha tests/"
+    },
     "directories": {
         "lib": "./lib/"
     },
