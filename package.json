@@ -18,5 +18,8 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/plorry/gramework.git"
+  },
+  "devDependencies": {
+    "mocha": "~1.18.2"
   }
 }
