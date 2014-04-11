@@ -1,22 +1,25 @@
 {
-    "name": "gramework",
-    "version": "0.0.1",
-    "description": "modular framework for rapid game development using gamejs",
-    "main": "./lib/gramework.js",
-    "scripts": {
-        "test": "mocha tests/"
-    },
-    "directories": {
-        "lib": "./lib/"
-    },
-    "dependencies": {
-        "gamejs": "1.0.0",
-        "super": "~0.2.3",
-        "underscore": "~1.5.2"
-    },
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/plorry/gramework.git"
-    }
+  "name": "gramework",
+  "version": "0.0.1",
+  "description": "modular framework for rapid game development using gamejs",
+  "main": "./lib/gramework.js",
+  "scripts": {
+    "test": "mocha tests/"
+  },
+  "directories": {
+    "lib": "./lib/"
+  },
+  "dependencies": {
+    "gamejs": "1.0.0",
+    "super": "~0.2.3",
+    "underscore": "~1.5.2"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/plorry/gramework.git"
+  },
+  "devDependencies": {
+    "mocha": "~1.18.2"
+  }
 }

@@ -6,7 +6,7 @@ var assert = require("assert"),
 
 describe("GameController", function() {
     it("should define default controls", function() {
-        var cr = input.GameController();
+        var cr = new input.GameController();
         assert.equal(cr.controls.left, gamejs.event.K_LEFT);
         assert.equal(cr.controls.right, gamejs.event.K_RIGHT);
         assert.equal(cr.controls.up, gamejs.event.K_UP);
@@ -14,7 +14,7 @@ describe("GameController", function() {
     });
 
     it("should allow custom controls", function() {
-        var cr = input.GameController({
+        var cr = new input.GameController({
             left: 'a', right: 'd', down: 's', up: 'w'
         });
 
@@ -27,7 +27,7 @@ describe("GameController", function() {
 
 describe("GameController Vector", function() {
     it("should create appropriate vector", function() {
-        var cr = input.GameController();
+        var cr = new input.GameController();
 
         cr.handle({
             type: gamejs.event.KEY_DOWN,
