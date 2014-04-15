@@ -3,7 +3,7 @@
 gramework
 =========
 
-Modular framework for rapid game development using [GameJs](http://gamejs.org/)
+Modular framework for rapid game development in Javascript using [GameJs](http://gamejs.org/) 
 
 Installation
 ===
@@ -19,17 +19,5 @@ Current classes available:
 Test
 ===
 
-    $ npm install -g mocha
+    $ npm install
     $ mocha ./tests
-
-
-Developing locally and using
-===
-
-So you don't have to constantly publish the npm module for gramework. You can
-simply do this:
-
-    $ cd gramework/
-    $ npm pack
-    $ cd /path/to/your/project
-    $ npm install /path/to/gramework/gramework-0.0.1.tgz
