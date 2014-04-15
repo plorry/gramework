@@ -50,7 +50,7 @@ describe("Dispatcher", function() {
 
         var spy = sinon.spy(Dispatcher.prototype, '_setSurface');
         var d = new Dispatcher(gamejs);
-        assert.ok(spy.calledWith(gamejs, canvas, undefined));
+        assert.ok(spy.calledWith(gamejs, canvas));
     });
 
     it("should initialize with stack", function() {
