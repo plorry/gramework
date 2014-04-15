@@ -20,6 +20,8 @@
     "url": "git://github.com/plorry/gramework.git"
   },
   "devDependencies": {
-    "mocha": "~1.18.2"
+    "mocha": "~1.18.2",
+    "jsdom": "~0.10.5",
+    "sinon": "~1.9.1"
   }
 }
