@@ -72,7 +72,7 @@ like so:
     var gamejs = require('gamejs'),
         gramework = require('gramework'),
         Dispatcher = gramework.Dispatcher,
-        FadeTransition = gramework.transitions.FadeTransition;
+        FadeTransition = gramework.state.FadeTransition;
 
     var d = new Dispatcher(gamejs, {
         defaultTransition: FadeTransition
