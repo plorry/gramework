@@ -56,4 +56,45 @@ may look someting like this:
     gamejs.ready(main);
 
 
-    
+Transitions
+====
+
+When pushing new scenes into the Dispatcher, you may want a transition, so it's
+not so sudden! There are some conveniences setup for you to make this simple.
+
+By default, the Dispatcher references a no-op Transition class as
+`defaultTransition`
+
+But you can easily adjust this to implement your own, or use one of the
+built-ins. Currently, we provide a simple `FadeTransition` class. You'd set it
+like so:
+
+    var gamejs = require('gamejs'),
+        gramework = require('gramework'),
+        Dispatcher = gramework.Dispatcher,
+        FadeTransition = gramework.transitions.FadeTransition;
+
+    var d = new Dispatcher(gamejs, {
+        defaultTransition: FadeTransition
+    });
+
+Now, upon using `push` to adjust the dispatch stack, the FadeTransition will run
+between states and you'll have some smooth transitions.
+
+You'll notice the default FadeTransition uses fades in and out to black, but
+this may not be ideal. You can easily adjust the default values by extending a
+transition.
+
+    var MyTransition = FadeTransition.extend({
+        colour: [255, 0, 255],
+        time: 4.0
+    });
+
+Finally, you can create your own. Just extend the base `Transition` object and
+implement the following spec as you need.
+
+    var MyTransition = Transition.extend({
+        initialize: function(before, after, options) {},
+        draw: function(surface) {},
+        update: function(dt) {}
+    });
