@@ -55,14 +55,16 @@ describe("Dispatcher", function() {
 
     it("should initialize with stack", function() {
         var d = new Dispatcher(gamejs, {
-            initial: 1
+            initial: 1,
+            defaultTransition: null
         });
         assert.deepEqual(d.stack, [1]);
     });
 
     it("should get top of stack", function() {
         var d = new Dispatcher(gamejs, {
-            initial: 1
+            initial: 1,
+            defaultTransition: null
         });
 
         d.push(2);
@@ -80,7 +82,8 @@ describe("Dispatcher", function() {
 
         var st = new ST();
         var d = new Dispatcher(gamejs, {
-            initial: st
+            initial: st,
+            defaultTransition: null
         });
 
         assert.equal(st.count, 0);
