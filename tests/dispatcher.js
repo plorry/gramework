@@ -3,7 +3,8 @@ var assert = require("assert"),
     sinon = require('sinon'),
     gamejs = require('gamejs'),
     gramework = require('../lib/gramework'),
-    Dispatcher = gramework.Dispatcher;
+    Dispatcher = gramework.Dispatcher,
+    Transition = gramework.state.Transition;
 
 window = require("jsdom").jsdom().createWindow();
 document = window.document;
@@ -16,6 +17,38 @@ Dispatcher = Dispatcher.extend({
     _setSurface: function() {
         return {};
     }
+});
+
+var CounterTransition = Transition.extend({
+    initialize: function(before, after, options) {
+        this.counter = 0;
+    },
+
+    update: function(dt) {
+        this.counter += 1;
+        Transition.prototype.update.apply(dt);
+    },
+});
+
+describe("Dispatcher Transitions", function() {
+    it("should use a default transition on initial", function() {
+        var d = new Dispatcher(gamejs, {
+            initial: [1],
+            defaultTransition: CounterTransition
+        });
+
+        // Our transition object contains an after property. Initial is next
+        assert.deepEqual(d.top().after, [1]);
+    });
+
+    it("should accept transition when calling push", function() {
+        var d = new Dispatcher(gamejs, {
+            initial: [1]
+        });
+
+        d.push([2], CounterTransition);
+        assert.deepEqual(d.top().after, [2]);
+    });
 });
 
 describe("Dispatcher", function() {
