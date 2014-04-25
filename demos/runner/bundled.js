@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var gamejs = require('gamejs'),
     gramework = require('../../../gramework'),
     animate = gramework.animate,
@@ -33,7 +33,7 @@ _.extend(Hud.prototype, gamejs.Rect.prototype, {
     }
 });
 
-},{"../../../gramework":3,"gamejs":17,"underscore":46}],2:[function(require,module,exports){
+},{"../../../gramework":3,"gamejs":15,"underscore":43}],2:[function(require,module,exports){
 /*global window, GLOBALS*/
 var _ = require('underscore'),
     gamejs = require('gamejs'),
@@ -432,21 +432,8 @@ gamejs.preload([
 ]);
 gamejs.ready(main);
 
-},{"../../../gramework":3,"./hud":1,"gamejs":17,"underscore":46}],3:[function(require,module,exports){
-var gamejs = require('gamejs'),
-    inherits = require('super');
-
-var textures = exports.textures = {
-    //TODO: Replace this hard-coded path
-};
-
-var texturePaths = Object.keys(textures).map(function(img) {
-    return textures[img];
-});
-
-var init = function() {
-    gamejs.preload(texturePaths);
-};
+},{"../../../gramework":3,"./hud":1,"gamejs":15,"underscore":43}],3:[function(require,module,exports){
+var gamejs = require('gamejs');
 
 module.exports = {
     Dispatcher: require('./gramework/dispatcher'),
@@ -454,26 +441,37 @@ module.exports = {
     Camera: require('./gramework/camera'),
     Scene: require('./gramework/scenes').Scene,
     animate: require('./gramework/animate'),
-    state: require('./gramework/state'),
     image: require('./gramework/image'),
     input: require('./gramework/input'),
     layers: require('./gramework/layers'),
     particles:  require('./gramework/particles'),
     tilemap: require('./gramework/tilemap'),
-    vectors: require('./gramework/vectors'),
-    uielements: require('./gramework/uielements'), 
-    gamejs: gamejs,
-    inherits: inherits,
-    init: init
+    vectors: require('./gramework/vectors')
 };
 
 //TODO: Kill this in favour of Entity
 //exports.actors = require('./gramework/actors');
 
-},{"./gramework/animate":4,"./gramework/camera":5,"./gramework/dispatcher":6,"./gramework/entity":7,"./gramework/image":8,"./gramework/input":9,"./gramework/layers":10,"./gramework/particles":11,"./gramework/scenes":12,"./gramework/state":13,"./gramework/tilemap":14,"./gramework/uielements":15,"./gramework/vectors":16,"gamejs":17,"super":45}],4:[function(require,module,exports){
+var textures = exports.textures = {
+	//TODO: Replace this hard-coded path
+	simpleParticleBlurred: './node_modules/gramework/lib/textures/simpleParticleBlurred.png'
+};
+
+var texturePaths = Object.keys(textures).map(function(img) {
+    return textures[img];
+});
+
+exports.init = function() {
+	gamejs.preload(texturePaths);
+};
+
+},{"./gramework/animate":4,"./gramework/camera":5,"./gramework/dispatcher":6,"./gramework/entity":7,"./gramework/image":8,"./gramework/input":9,"./gramework/layers":10,"./gramework/particles":11,"./gramework/scenes":12,"./gramework/tilemap":13,"./gramework/vectors":14,"gamejs":15}],4:[function(require,module,exports){
 var gamejs = require('gamejs'),
-    inherits = require('super'),
     _ = require('underscore');
+
+var imgfy = exports.imgfy = function(path) {
+    return gamejs.image.load(path);
+};
 
 /*
  * Prepare a usable image for for a Sprite
@@ -482,7 +480,7 @@ var SpriteSheet = exports.SpriteSheet = function(image, w, h) {
     this.width = w;
     this.height = h;
 
-    this.image = gamejs.image.load(image);
+    this.image = imgfy(image);
     this.surfaceCache = [];
 
     var imgSize = new gamejs.Rect([0,0],[this.width,this.height]);
@@ -496,14 +494,8 @@ var SpriteSheet = exports.SpriteSheet = function(image, w, h) {
             this.surfaceCache.push(surface);
         }
     }
-
-    this.initialize.apply(this, arguments);
+    return this;
 };
-
-SpriteSheet.extend = inherits.extend;
-
-// An empty function by default. Override it with your own initialization logic.
-SpriteSheet.prototype.initialize = function(options) {};
 
 _.extend(SpriteSheet.prototype, {
     get: function(index) {
@@ -523,14 +515,8 @@ var Animation = exports.Animation = function(spriteSheet, initial, spec) {
     this.image = spriteSheet.get(0);
     this.start(initial);
 
-    this.initialize.apply(this, arguments);
+    return this;
 };
-
-Animation.extend = inherits.extend;
-
-// An empty function by default. Override it with your own initialization logic.
-Animation.prototype.initialize = function(options) {};
-
 
 Animation.prototype.start = function(name) {
     this.setState(name);
@@ -572,7 +558,7 @@ Animation.prototype.update = function(msDuration) {
     return this.image;
 };
 
-},{"gamejs":17,"super":45,"underscore":46}],5:[function(require,module,exports){
+},{"gamejs":15,"underscore":43}],5:[function(require,module,exports){
 /*
  * Create a camera around a display.
  *
@@ -745,69 +731,25 @@ _.extend(Camera.prototype, {
     }
 });
 
-},{"gamejs":17,"underscore":46}],6:[function(require,module,exports){
-/*global document*/
-var _ = require('underscore'),
-    inherits = require('super'),
-    Transition = require('./state').Transition;
+},{"gamejs":15,"underscore":43}],6:[function(require,module,exports){
+var _ = require('underscore');
 
-function DispatcherException(message) {
-    this.message = message;
-    this.name = "DispatcherException";
-}
-
-var Dispatcher = module.exports = function(gamejs, options) {
-    options = (options || {});
-
-    this.stack = [];
-    this.defaultTransition = (typeof options.defaultTransition === "undefined" ? Transition : options.defaultTransition);
-
-    if (options.initial) {
-        this.push(options.initial);
-    }
-
-    options.canvas = (options.canvas || {});
-    var canvas;
-    if (options.canvas.id) {
-        canvas = document.getElementById(options.canvas.id);
-    } else {
-        canvas = document.getElementById("gjs-canvas");
-    }
-
-    if (typeof canvas === "undefined") {
-        throw new DispatcherException(
-            "No canvas element could be found in the document.");
-    }
-
-    var surfaceFlag = options.canvas.flag || undefined;
-    this.mainSurface = this._setSurface(gamejs, canvas, surfaceFlag);
-
-    gamejs.onTick(this.onTick, this);
-    gamejs.onEvent(this.onEvent, this);
-
-    this.initialize.apply(this, arguments);
+var FadeTransition = function(options) {
 };
 
-Dispatcher.extend = inherits.extend;
+var Dispatcher = module.exports = function(options) {
+    this.initialize(options);
+    this.defaultTransition = FadeTransition;
+};
+
 _.extend(Dispatcher.prototype, {
-    // Internal function to set surface from canvas. Overrided in tests until we
-    // can better figure out how to mock a *real* canvas.
-    _setSurface: function(gamejs, canvas, surfaceFlag) {
-        var surface = gamejs.display.setMode(
-        [canvas.width, canvas.height], surfaceFlag);
-        return surface;
-    },
+    initialize: function(options) {
+        options = (options || {});
 
-    // An empty function by default. Override it with your own initialization logic
-    initialize: function(options) { },
-
-    onTick: function(dt) {
-        this.update(dt);
-        this.draw(this.mainSurface);
-    },
-
-    onEvent: function(ev) {
-        this.event(ev);
+        this.stack = [];
+        if (options.initial) {
+            this.push(options.initial);
+        }
     },
 
     reset: function(initial) {
@@ -816,19 +758,12 @@ _.extend(Dispatcher.prototype, {
     },
 
     push: function(state, transition) {
-        if (transition !== null) {
-            transition = (transition || this.defaultTransition);
-        }
-
+        transition = (transition || this.defaultTransition);
         if (transition) {
-            var ts = new transition(this.top(), state);
-            ts.dispatcher = this;
-            this.stack.push(ts);
-        } else {
-            state.dispatcher = this;
-            this.stack.push(state);
+            //transition(this.top(), state);
         }
-
+        state.dispatcher = this;
+        this.stack.push(state);
     },
 
     top: function() {
@@ -858,38 +793,25 @@ _.extend(Dispatcher.prototype, {
     }
 });
 
-},{"./state":13,"super":45,"underscore":46}],7:[function(require,module,exports){
+},{"underscore":43}],7:[function(require,module,exports){
 // A stripped down, simpler Actors module.
 var gamejs = require('gamejs'),
-    inherits = require('super'),
+    extend = gamejs.utils.objects.extend,
     Sprite = gamejs.sprite.Sprite;
 
-/*
- * Required:
- * y: Starting y coordinate
- * x: Starting x coordinate
- * width: Width of sprite rectangle.
- * height: Height of sprite rectangle.
- */
 var Entity = module.exports = function(options) {
-    Sprite.apply(this, arguments);
+    Entity.superConstructor.apply(this, arguments);
 
-    this.w = options.width;
-    this.h = options.height;
+    this.y = options.y;
+    this.w = options.width || 32;
+    this.h = options.height || 32;
 
     this.rect = new gamejs.Rect([
-        options.x,
-        options.y
+        options.x + this.w / 2,
+        options.y + this.h / 2
     ], [this.w, this.h]);
-
-    this.initialize.apply(this, arguments);
 };
-
-Entity.extend = inherits.extend;
-inherits(Entity, Sprite);
-
-// An empty function by default. Override it with your own initialization logic.
-Entity.prototype.initialize = function(options) {};
+extend(Entity, Sprite);
 
 Entity.prototype.move = function(x, y) {
     this.lastX = this.rect.x;
@@ -915,16 +837,15 @@ Entity.prototype.setPos = function(x, y) {
     this.rect.y = y;
 };
 
-},{"gamejs":17,"super":45}],8:[function(require,module,exports){
+},{"gamejs":15}],8:[function(require,module,exports){
 var gamejs = require('gamejs');
 
 var imgfy = exports.imgfy = function(path) {
     return gamejs.image.load(path);
 };
 
-},{"gamejs":17}],9:[function(require,module,exports){
+},{"gamejs":15}],9:[function(require,module,exports){
 var gamejs = require('gamejs'),
-    inherits = require('super'),
     Vec2d = require('./vectors').Vec2d,
     _ = require('underscore');
 
@@ -940,82 +861,56 @@ var GameController = exports.GameController = function(options) {
         right: gamejs.event.K_RIGHT,
         up: gamejs.event.K_UP,
         down: gamejs.event.K_DOWN,
-        reset: gamejs.event.K_r,
-        action: gamejs.event.K_SPACE,
-        cancel: gamejs.event.K_ESC
+        reset: gamejs.event.K_r
     };
     _.extend(this.controls, options);
-    this.reverseControls = {};
 
-    for (key in this.controls) {
-        this.reverseControls[this.controls[key]] = key;
-    }
+    this.handle = function(event) {
+        if (event.type === gamejs.event.KEY_DOWN) {
+            this.keyDown = event.key;
+            this.keyUp = null;
+            return this.keyDown;
+        } else if (event.type === gamejs.event.KEY_UP) {
+            this.keyUp = event.key;
+            this.keyDown = null;
+            return this.keyUp;
+        }
+    };
 
-    this.initialize.apply(this, arguments);
+    this.reset = function() {
+        if (this.keyDown === this.controls.reset) {
+            return true;
+        }
+        return false;
+    };
+
+    // Given our four directional input, define a vector that'll push us in the
+    // right direction. 
+    this.movementVector = function() {
+        var vel = new Vec2d(0, 0);
+
+        if (this.keyDown === this.controls.left) {
+            vel.setX(-1);
+        } else if (this.keyDown === this.controls.right) {
+            vel.setX(1);
+        } else {
+            vel.setX(0);
+        }
+
+        if (this.keyDown === this.controls.up) {
+            vel.setY(-1);
+        } else if (this.keyDown === this.controls.down) {
+            vel.setY(1);
+        } else {
+            vel.setY(0);
+        }
+        return vel.normalized();
+    };
+
+    return this;
 };
 
-GameController.extend = inherits.extend;
-
-// An empty function by default. Override it with your own initialization logic.
-GameController.prototype.initialize = function(options) {};
-
-GameController.prototype.handle = function(event) {
-    if (event.type === gamejs.event.MOUSE_MOTION) {
-        return { mousePos: event.pos };
-    }
-
-    if (_.indexOf(_.values(this.controls), event.key) == -1) {
-        return;
-    }
-
-    if (event.type === gamejs.event.KEY_DOWN) {
-        this.keyDown = event.key;
-        this.keyUp = null;
-        return {
-            keyDown: this.keyDown,
-            label: this.reverseControls[this.keyDown]
-        };
-    } else if (event.type === gamejs.event.KEY_UP) {
-        this.keyUp = event.key;
-        this.keyDown = null;
-        return {
-            keyUp: this.keyUp,
-            label: this.reverseControls[this.keyUp]
-        };
-    }
-};
-
-GameController.prototype.reset = function() {
-    if (this.keyDown === this.controls.reset) {
-        return true;
-    }
-    return false;
-};
-
-// Given our four directional input, define a vector that'll push us in the
-// right direction. 
-GameController.prototype.movementVector = function() {
-    var vel = new Vec2d(0, 0);
-
-    if (this.keyDown === this.controls.left) {
-        vel.setX(-1);
-    } else if (this.keyDown === this.controls.right) {
-        vel.setX(1);
-    } else {
-        vel.setX(0);
-    }
-
-    if (this.keyDown === this.controls.up) {
-        vel.setY(-1);
-    } else if (this.keyDown === this.controls.down) {
-        vel.setY(1);
-    } else {
-        vel.setY(0);
-    }
-    return vel.normalized();
-};
-
-},{"./vectors":16,"gamejs":17,"super":45,"underscore":46}],10:[function(require,module,exports){
+},{"./vectors":14,"gamejs":15,"underscore":43}],10:[function(require,module,exports){
 var imgfy = require('./image').imgfy;
 
 // Use for repeating Backgrounds on a screen, adjust speed
@@ -1140,193 +1035,107 @@ Emitter.prototype.draw = function(surface) {
     }, this);
 };
 
-},{"gamejs":17}],12:[function(require,module,exports){
+},{"gamejs":15}],12:[function(require,module,exports){
 var gamejs = require('gamejs'),
-    inherits = require('super'),
-    Camera = require('./camera'),
-    _ = require('underscore');
+    Camera = require('./camera');
 
+//Scene Class
 var Scene = exports.Scene = function(options) {
-    options = (options || {});
-
     this._elapsed = 0;
+    this.init(options);
+};
+
+Scene.prototype.init = function(options) {
     this._width = options.width;
     this._height = options.height;
-
-    // No options passed, but we can give sensible defaults by getting the games
-    // main surface.
-    if (!this._width || !this._height) {
-        var size = gamejs.display.getSurface().getSize();
-        this._width = (this._width || size[0]);
-        this._height = (this._height || size[1]);
-    }
-
-    // Actors will be deprecated in favour of entities.
     this.actors = new gamejs.sprite.Group();
-    this.entities = new gamejs.sprite.Group();
-
     this.layers = [];
-    this.elements = new gamejs.sprite.Group();
+    this.elements = [];
     this.view = new gamejs.Surface([this._width, this._height]);
 
     this.camera = new Camera(this.view.rect, {
         width: this._width,
         height: this._height
     });
-    this.initialize.apply(this, arguments);
-};
-Scene.extend = inherits.extend;
-
-_.extend(Scene.prototype, {
-    // An empty function by default. Override it with your own initialization logic.
-    initialize: function(options) {},
-
-    width: function() {
-        return this.camera.rect.width;
-    },
-
-    height: function() {
-        return this.camera.rect.height;
-    },
-
-    getElapsedTime: function() {
-        return this._elapsed;
-    },
-
-    pushEntity: function(entity) {
-        this.entities.add(entity);
-    },
-
-    pushElement: function(element) {
-        this.elements.add(element);
-    },
-
-    pushLayer: function(layer) {
-        this.layers.push(layer);
-    },
-
-    update: function(dt) {
-        this.layers.forEach(function(layer) {
-            layer.update(dt);
-        }, this);
-
-        this.entities.update(dt);
-        this.actors.update(dt);
-        this.elements.update(dt);
-        this.camera.update(dt);
-        this._elapsed += dt;
-    },
-
-    draw: function(display) {
-        // TODO: Offer same interface as Sprite groups. No need to iterate
-        this.view.clear();
-        display.clear();
-        this.layers.forEach(function(layer) {
-            layer.draw(this.view, this.camera);
-        }, this);
-        this.actors.draw(this.view);
-        this.entities.draw(this.view);
-
-        
-        this.camera.draw(this.view, display);
-        this.elements.draw(display);
-    }
-});
-
-},{"./camera":5,"gamejs":17,"super":45,"underscore":46}],13:[function(require,module,exports){
-var gamejs = require('gamejs'),
-    inherits = require('super');
-
-var Transition = function(before, after, options) {
-    options = (options || {});
-
-    this.before = before;
-    this.after = after;
-
-    if (!this.time) {
-        this.time = (options.time || 2.0);
-    }
-
-    if (!this.colour) {
-        this.colour = (options.colour || [255, 0, 255]);
-    }
-
-    this.p = 0;
-    this.initialize.apply(this, arguments);
 };
 
-Transition.prototype.initialize = function(before, after, options) {};
-Transition.prototype.draw = function(surface) {};
-Transition.prototype.update = function(dt) { this.dispatcher.push(this.after, null); };
-Transition.extend = inherits.extend;
-
-var FadeTransition = Transition.extend({
-    time: 2.0,
-    colour: [0, 0, 0]
-});
-
-FadeTransition.prototype.draw = function(surface) {
-    var alpha;
-    surface.clear();
-
-    // At the start of the transition, we go from a solid block to 0-alpha, and
-    // then we begin showing the new state going from 1-alpha to 0-alpha again.
-    if (this.p < (this.time / 2) && this.before) {
-        alpha = (this.time - this.p) * this.p;
-        this.before.draw(surface);
-    } else {
-        alpha = (this.time - this.p) / this.p;
-        this.after.draw(surface);
-    }
-
-    var rgbaString = ["rgba(", this.colour.join(",") + ",", alpha, ")"].join('');
-    surface.fill(rgbaString);
-};
-FadeTransition.prototype.update = function(dt) {
-    dt = (dt / 1000);
-
-    this.p += dt;
-    if (this.p >= this.time) {
-        this.dispatcher.push(this.after, null);
-    }
+Scene.prototype.width = function() {
+    return this.camera.rect.width;
 };
 
-module.exports = {
-    Transition: Transition,
-    FadeTransition: FadeTransition
+Scene.prototype.height = function() {
+    return this.camera.rect.height;
 };
 
-},{"gamejs":17,"super":45}],14:[function(require,module,exports){
+// Deprecate this in favour of simply using this.actors.add
+// If we want side-effects, this.actors can become a special list with the same
+// API as sprite.Group
+Scene.prototype.pushActor = function(actor) {
+    this.actors.add(actor);
+};
+
+Scene.prototype.pushElement = function(element) {
+    this.elements.push(element);
+};
+
+Scene.prototype.getElapsedTime = function() {
+    return this._elapsed;
+};
+
+Scene.prototype.pushLayer = function(layer) {
+    this.layers.push(layer);
+};
+
+Scene.prototype.update = function(dt) {
+    this.layers.forEach(function(layer) {
+        layer.update(dt);
+    }, this);
+    this.actors.update(dt);
+    this.elements.forEach(function(element){
+        element.update(dt);
+    }, this);
+    this.camera.update(dt);
+    this._elapsed += dt;
+};
+
+
+Scene.prototype.draw = function(display) {
+    // TODO: Offer same interface as Sprite groups. No need to iterate
+    this.view.clear();
+    display.clear();
+    this.layers.forEach(function(layer) {
+        layer.draw(this.view, this.camera);
+    }, this);
+    this.actors.draw(this.view);
+    this.elements.forEach(function(element) {
+        element.draw(this.view);
+    }, this);
+    this.camera.draw(this.view, display);
+};
+
+},{"./camera":5,"gamejs":15}],13:[function(require,module,exports){
 /*jshint es5:true */
 /*
  * Tilemap module.
  *
  */
 var gamejs = require('gamejs'),
-    inherits = require('super'),
-    Sprite = gamejs.sprite.Sprite,
     extend = gamejs.utils.objects.extend,
     tmx = gamejs.tmx;
 
-var Tile = function(rect, properties, coords) {
-    gamejs.sprite.Sprite.apply(this, arguments);
+var Tile = function(rect, properties) {
+    Tile.superConstructor.apply(this, arguments);
 
     this.rect = rect;
     this.properties = properties;
-    this.coords = coords;
-
-    this.initialize.apply(this, arguments);
+    //gamejs.log("Tile", properties, this.rect.center[0]);
+    return this;
 };
-Tile.extend = inherits.extend;
-inherits(Tile, gamejs.sprite.Sprite);
-
-// An empty function by default. Override it with your own initialization logic.
-Tile.prototype.initialize = function(options) {};
+extend(Tile, gamejs.sprite.Sprite);
 
 // Loads the Map at `url` and holds all layers.
 var TileMap = exports.TileMap = function(url, options) {
-    options = (options || {});
-    this.tiles = [];
+    this.tiles = new gamejs.sprite.Group();
 
     var callbacks = options.callbacks || {};
 
@@ -1344,33 +1153,11 @@ var TileMap = exports.TileMap = function(url, options) {
             ];
             layerView.draw(display, offset);
         }, this);
-
-    };
-
-    this.getTile = function(x, y){
-        return this.tiles[x][y];
     };
 
     // Initialize.
     var self = this;
     var map = new tmx.Map(url);
-
-    this.getNeighbours = function(x, y) {
-        var neighbours = [];
-        if (x < map.width - 1) {
-            neighbours.push(this.getTile(x+1, y));
-        }
-        if (y < map.height - 1) {
-            neighbours.push(this.getTile(x, y+1));
-        }
-        if (x > 0) {
-            neighbours.push(this.getTile(x-1, y));
-        }
-        if (y > 0) {
-            neighbours.push(this.getTile(x, y-1));
-        }
-        return neighbours;
-    };
 
     // Given the TMX Map we've loaded, go through each layer (via map.layers,
     // provided by gamejs), and return a LayerView that we can deal with.
@@ -1390,12 +1177,8 @@ var TileMap = exports.TileMap = function(url, options) {
 var LayerView = function(map, layer, opts) {
     if (layer.properties) {
         this.zValue = layer.properties.z || 0;
-        this.doDraw = layer.properties.draw || true;
+        this.doDraw = layer.properties.draw || false;
         this.solid = layer.properties.solid || false;
-    } else {
-        this.zValue = 0;
-        this.doDraw = true;
-        this.solid = false;
     }
     this.draw = function(display, offset) {
         if (this.doDraw === true) display.blit(this.surface, offset);
@@ -1412,9 +1195,6 @@ var LayerView = function(map, layer, opts) {
     // from the Map ('opt.tiles') to get the actual Surfaces.
     layer.gids.forEach(function(row, i) {
         row.forEach(function(gid, j) {
-            if (!map.tiles[j]) {
-                map.tiles[j] = [];
-            }
             if (gid === 0) {
                 return;
             }
@@ -1428,9 +1208,8 @@ var LayerView = function(map, layer, opts) {
                   [opts.tileWidth, opts.tileHeight]
                 );
                 this.surface.blit(tileSurface, tileRect);
-                var coords = [j, i];
-                var tile = new Tile(tileRect, tileProperties, coords);
-                map.tiles[j][i] = tile;
+                var tile = new Tile(tileRect, tileProperties);
+                map.tiles.add(tile);
 
                 // Tile property callbacks.
                 Object.keys(tileProperties).forEach(function(prop) {
@@ -1446,423 +1225,7 @@ var LayerView = function(map, layer, opts) {
     return this;
 };
 
-},{"gamejs":17,"super":45}],15:[function(require,module,exports){
-/*jshint es5:true */
-/*
- * Interface Entity module.
- *
- */
-var gamejs = require('gamejs');
-var Entity = require('./entity'),
-    inherits = require('super'),
-    _ = require('underscore');
-
-var Element = exports.Element = function(options) {
-    Entity.apply(this, arguments);
-};
-
-_.extend(Element.prototype, Entity.prototype, {
-    initialize: function(options) {
-        // TODO: Allow borderWidth to accept array to differentiate between vertical width and horizontal width
-        this.borderWidth = options.borderWidth || 0;
-
-        if (options.color) {
-            if (options.color.length === 3) {
-                this.color = 'rgb(' + options.color.join(',') + ')';
-            } else if (options.color.length === 4) {
-                this.color = 'rgba(' + options.color.join(',') + ')';
-            }
-        } else {
-            this.color = '#000';
-        }
-
-        if (options.borderColor) {
-            if (options.borderColor.length === 3) {
-                this.borderColor = 'rgb(' + options.borderColor.join(',') + ')';
-            } else if (options.borderColor.length === 4) {
-                this.borderColor = 'rgba(' + options.borderColor.join(',') + ')';
-            }
-        } else {
-            this.borderColor = '#000';
-        }
-
-        if (options.borderImage) {
-            this.borderImage = new BorderImage({
-                slice: options.borderImageSlice,
-                imgPath: options.borderImage,
-                repeat: options.borderImageRepeat,
-                width: this.w + this.borderWidth,
-                height: this.h + this.borderWidth,
-                x: this.rect.left - (this.borderWidth / 2),
-                y: this.rect.top - (this.borderWidth / 2),
-                //size: [width + 2 * this.borderWidth, height + 2 * this.borderWidth],
-                //position: [this.position[0] - this.borderWidth, this.position[1] - this.borderWidth],
-                borderWidth: this.borderWidth
-            });
-        }
-
-        if (options.image) {
-            this.image = gamejs.image.load(options.image);
-        }
-    },
-
-    update: function(dt) {
-
-    },
-
-    draw: function(surface) {
-        if (this.image) {
-
-        } else {
-            gamejs.draw.rect(surface, this.color, this.rect);
-        }
-
-        if (this.borderImage) {
-            this.borderImage.draw(surface);
-        } else if (this.borderWidth > 0){
-            gamejs.draw.rect(
-                surface,
-                this.borderColor,
-                this.rect,
-                this.borderWidth
-            );
-        }
-
-    }
-});
-
-var BorderImage = function(options) {
-    Entity.apply(this, arguments);
-};
-
-_.extend(BorderImage.prototype, Entity.prototype, {
-    initialize: function(options) {
-        this.imgPath = options.imgPath;
-        this.ninePatch = gamejs.image.load(this.imgPath);
-
-        if (Array.isArray(options.slice) && options.slice.length === 2) {
-            this.vSlice = options.slice[1];
-            this.hSlice = options.slice[0];
-        } else if (typeof options.slice === 'number') {
-            this.vSlice = this.hSlice = options.slice
-        }
-        this.repeat = options.repeat || 'repeat';
-        this.position = options.position || [0,0];
-        this.borderWidth = options.borderWidth || 0;
-
-        /*
-        This is where the BorderImage object breaks apart the image file into nine sections and creates
-        the respective surfaces for the corners and sides. These will be drawn around the parent element
-        object at the time of rendering
-        */
-
-        var imgSize = this.ninePatch.getSize();
-        if (this.vSlice > imgSize[1]) throw new Error("vert slice greater than image height");
-        if (this.hSlice > imgSize[0]) throw new Error("horz slice greater than image width");
-
-        var columnHeight = imgSize[1] - (2 * this.vSlice);
-        var rowWidth = imgSize[0] - (2 * this.hSlice);
-        var cornerRect = new gamejs.Rect(0,0,this.borderWidth,this.borderWidth);
-        var columnRect = new gamejs.Rect(0,0,this.borderWidth,columnHeight);
-        var rowRect = new gamejs.Rect(0,0,rowWidth,this.borderWidth);
-
-        this.leftBorderFull = new gamejs.Surface(this.borderWidth, this.h - 2 * this.borderWidth);
-        this.rightBorderFull = new gamejs.Surface(this.borderWidth, this.h - 2 * this.borderWidth);
-        this.topBorderFull = new gamejs.Surface(this.w - 2 * this.borderWidth, this.borderWidth);
-        this.bottomBorderFull = new gamejs.Surface(this.w - 2 * this.borderWidth, this.borderWidth);
-
-        this.topLeft = new gamejs.Surface(this.borderWidth, this.borderWidth);
-        this.topRight = new gamejs.Surface(this.borderWidth, this.borderWidth);
-        this.bottomLeft = new gamejs.Surface(this.borderWidth, this.borderWidth);
-        this.bottomRight = new gamejs.Surface(this.borderWidth, this.borderWidth);
-
-        this.leftBorder = new gamejs.Surface(this.borderWidth, columnHeight);
-        this.rightBorder = new gamejs.Surface(this.borderWidth, columnHeight);
-        this.topBorder = new gamejs.Surface(rowWidth, this.borderWidth);
-        this.bottomBorder = new gamejs.Surface(rowWidth, this.borderWidth);
-
-        var topLeftRect = new gamejs.Rect(0,0,this.hSlice,this.vSlice);
-        var topRightRect = new gamejs.Rect(imgSize[0]-this.hSlice,0,this.hSlice,this.vSlice);
-        var bottomLeftRect = new gamejs.Rect(0, imgSize[1]-this.vSlice,this.hSlice,this.vSlice);
-        var bottomRightRect = new gamejs.Rect(imgSize[0]-this.hSlice,imgSize[1]-this.vSlice,this.hSlice,this.vSlice);
-
-        this.topLeft.blit(this.ninePatch, cornerRect, topLeftRect);
-        this.topRight.blit(this.ninePatch, cornerRect, topRightRect);
-        this.bottomLeft.blit(this.ninePatch, cornerRect, bottomLeftRect);
-        this.bottomRight.blit(this.ninePatch, cornerRect, bottomRightRect);
-        
-        var leftRect = new gamejs.Rect(0,this.vSlice,this.hSlice,columnHeight);
-        var rightRect = new gamejs.Rect(imgSize[0]-this.hSlice,this.vSlice,this.hSlice,columnHeight);
-        var topRect = new gamejs.Rect(this.hSlice,0,rowWidth,this.vSlice);
-        var bottomRect = new gamejs.Rect(this.hSlice,imgSize[1]-this.vSlice,rowWidth,this.vSlice);
-
-        this.leftBorder.blit(this.ninePatch, columnRect, leftRect);
-        this.rightBorder.blit(this.ninePatch, columnRect, rightRect);
-        this.topBorder.blit(this.ninePatch, rowRect, topRect);
-        this.bottomBorder.blit(this.ninePatch, rowRect, bottomRect);
-
-        this.image = new gamejs.Surface(this.rect);
-
-        console.log(this.x + ' ' + this.y);
-        
-        for (var i=0;i*this.leftBorder.getSize()[1] < this.h;i++) {
-            this.leftBorderFull.blit(this.leftBorder, [0,(i*this.leftBorder.getSize()[1])]);
-            this.rightBorderFull.blit(this.rightBorder, [0,(i*this.leftBorder.getSize()[1])]);
-        }
-
-        this.image.blit(this.leftBorderFull, [0, this.borderWidth]);
-        this.image.blit(this.rightBorderFull, [this.w-this.borderWidth, this.borderWidth]);
-
-        for (var i=0;i*this.topBorder.getSize()[0] < this.w;i++) {
-            this.topBorderFull.blit(this.topBorder, [(i*this.topBorder.getSize()[0]),0]);
-            this.bottomBorderFull.blit(this.bottomBorder, [(i*this.topBorder.getSize()[0]),0]);
-        }
-
-        this.image.blit(this.topBorderFull, [this.borderWidth, 0]);
-        this.image.blit(this.bottomBorderFull, [this.borderWidth, this.h-this.borderWidth]);
-
-        this.image.blit(this.topLeft);
-        this.image.blit(this.topRight, [this.w-this.borderWidth,0]);
-        this.image.blit(this.bottomLeft, [0,this.h - this.borderWidth]);
-        this.image.blit(this.bottomRight, [this.w-this.borderWidth,this.h - this.borderWidth]);
-
-        console.log(this.image);
-    },
-
-    update: function() {
-
-    }
-});
-
-var gradientSurface = function(surface, options) {
-    var gradSurface = surface.clone();
-
-    var colors = options.colors || [[255, 255, 255]];
-    var steps = options.steps || 1;
-
-    var segHeight = gradSurface.height / this.steps;
-
-    if (colors.length === 1){
-        gradSurface.fill(colors[0]);
-        return gradSurface;
-    }
-    var subSteps = steps / (colors.length - 1);
-    colors.forEach(function(color, i) {
-        if (colors[i+1] === undefined){}
-        var nextColor = colors[i+1];
-        var rStep = (color[0] - nextColor[0]) / subSteps;
-        var gStep = (color[1] - nextColor[1]) / subSteps;
-        var bStep = (color[2] - nextColor[2]) / subSteps;
-
-        for (var i=0; i < subSteps; i++) {
-            var subRect = new gamejs.Rect(
-                [0, Math.floor(segHeight * i)],
-                [gradSurface.width, Math.ceil(segHeight)]);
-            var thisColor = [
-                Math.floor(Math.abs(color[0] - (i * rStep))),
-                Math.floor(Math.abs(color[1] - (i * gStep))),
-                Math.floor(Math.abs(color[2] - (i * bStep)))
-            ];
-
-            var thisColor = 'rgb(' + thisColor.join(',') + ')';
-            gamejs.draw.rect(gradSurface, thisColor, subRect, 0);
-        }
-    });
-
-    return gradSurface;
-};
-
-/*
-var font = new gamejs.font.Font('8px Ebit');
-
-var TextBlock = exports.TextBlock = function(pos, dims, options) {
-    this.rect = new gamejs.Rect(pos, dims);
-    this.surface = new gamejs.Surface(this.rect);
-    this.init(options);
-};
-
-TextBlock.prototype.init = function(options) {
-    var fontName = options.fontName || '8px Ebit';
-    this.font = new gamejs.font.Font(fontName);
-    this.text = options.text || '';
-    this.fontColor = options.fontColor || '#000';
-    this.scrolling = options.scrolling || false;
-    this.currentText = '';
-    this.fontSurface = [];
-    this.lines = [];
-
-    if (this.scrolling === false) this.currentText = this.text;
-    this.lineSetup();
-};
-
-TextBlock.prototype.lineSetup = function() {
-    this.words = this.currentText.split(" ");
-    var done = false;
-    var i = 0;
-    this.lines[i] = '';
-    //Text line wrapping
-    this.words.forEach(function(word) {
-        this.fontSurface[i] = this.font.render(
-            this.lines[i] + word + ' ',
-            this.fontColor);
-        fontSurfaceWidth = this.fontSurface[i].getSize();
-        if (fontSurfaceWidth[0] > this.width) {
-            //Too wide. Time to wrap
-            this.fontSurface[i] = this.font.render(
-                this.lines[i],
-                this.fontColor);
-            i++;
-            this.lines[i] = '';
-        }
-        this.lines[i] +=  word + ' ';
-    }, this);
-};
-
-TextBlock.prototype.update = function(msDuration) {
-};
-
-TextBlock.prototype.draw = function(surface) {
-    var lineHeight;
-    if (this.fontSurface[0]) {
-        lineHeight = this.fontSurface[0].getSize()[1] || 0;
-    } else {
-        lineHeight = 0;
-    }
-    this.fontSurface.forEach(function(line, idx) {
-        this.surface.blit(line, [0, idx * lineHeight]);
-    }, this);
-
-    surface.blit(this.surface, this.rect);
-
-    return;
-};
-
-
-
-
-var Menu = exports.Menu = function(options){
-    this.items = [];
-    this.init(options);
-};
-
-Menu.prototype.init = function(options){
-    this.title = options.title || undefined;
-    if (options.width && options.height) {
-        if (options.color.length === 4)
-            var colorString = "rgba("+options.color.join(',')+")";
-        else if (options.color.length === 3)
-            var colorString = "rgb("+options.color.join(',')+")";
-        else var colorString = "rgb(0,0,0)";
-        this.surface = new Element(options.height, options.width, {
-            color: colorString,
-            position: options.position || [0,0],
-            borderWidth: options.borderWidth || 0,
-            borderImage: {
-                vSlice: options.borderImage.vSlice || 0,
-                hSlice: options.borderImage.hSlice || 0
-            }
-        });
-    } else {
-        this.surface = undefined;
-    }
-    if (options.items){
-        options.items.forEach(function(item){
-            var newItem = new MenuItem(item);
-            this.items.push(newItem);
-        }, this);
-    }
-
-    this._isActive = false;
-    this.padding = options.padding || 0;
-    if (options.border){
-
-    }
-};
-
-Menu.prototype.isActive = function(){
-    return this._isActive;
-};
-
-Menu.prototype.activate = function(){
-    return this._isActive = true; 
-};
-
-Menu.prototype.deactivate = function(){
-    return this._isActive = false;
-};
-
-Menu.prototype.update = function(dt){
-    this.surface.update(dt);
-};
-
-Menu.prototype.draw = function(surface) {
-    this.surface.draw(surface);
-    this.items.forEach(function(item) {
-        item.draw(this.surface.background);
-    }, this);
-};
-
-var MenuItem = exports.MenuItem = function(options){
-    this.init(options);
-};
-
-MenuItem.prototype.init = function(options){
-    this.widget = options.widget;
-    this.linkedValue = options.linkedValue || undefined;
-    this.activate = options.onSelect || undefined;
-    this._selected = false;
-    this.height;
-    this.width;
-};
-
-MenuItem.prototype.activate = function(){ 
-    this.activate;
-};
-
-MenuItem.prototype.isSelected = function(){
-    return this._selected;
-};
-
-MenuItem.prototype.select = function(){
-    this._selected = true;
-};
-
-MenuItem.prototype.deselect = function(){
-    this._selected = false;
-};
-
-MenuItem.prototype.draw = function(){
-    this.widget.draw();
-};
-
-var MenuWidget = function(options){
-    this.init(options);
-};
-
-MenuWidget.prototype.init = function(options){
-
-};
-
-var TextWidget = function(options){
-    TextWidget.superConstructor.apply(this, arguments);
-};
-objects.extend(TextWidget, MenuWidget);
-
-TextWidget.prototype.init = function(options){
-    this.text = options.text;
-};
-
-var SliderWidget = function(options){
-    SliderWidget.superConstructor.apply(this, arguments);
-};
-objects.extend(SliderWidget, MenuWidget);
-
-SliderWidget.prototype.init = function(options){
-
-};
-
-*/
-},{"./entity":7,"gamejs":17,"super":45,"underscore":46}],16:[function(require,module,exports){
+},{"gamejs":15}],14:[function(require,module,exports){
 /*jslint es5: true*/
 /*
  * Vector Utilities
@@ -2039,7 +1402,7 @@ Vec2d.prototype = {
 };
 
 
-},{"gamejs":17,"underscore":46}],17:[function(require,module,exports){
+},{"gamejs":15,"underscore":43}],15:[function(require,module,exports){
 var matrix = require('./gamejs/utils/matrix');
 var objects = require('./gamejs/utils/objects');
 var Callback = require('./gamejs/callback').Callback;
@@ -3025,7 +2388,7 @@ exports.onEvent = function(fn, scope) {
 exports.onTick = function(fn, scope) {
   exports.time._CALLBACK = new Callback(fn, scope);
 };
-},{"./gamejs/callback":18,"./gamejs/display":19,"./gamejs/draw":20,"./gamejs/event":21,"./gamejs/font":22,"./gamejs/http":23,"./gamejs/image":24,"./gamejs/mask":25,"./gamejs/mixer":26,"./gamejs/noise":27,"./gamejs/pathfinding/astar":28,"./gamejs/sprite":29,"./gamejs/surfacearray":30,"./gamejs/time":31,"./gamejs/tmx":32,"./gamejs/transform":33,"./gamejs/utils/arrays":34,"./gamejs/utils/base64":35,"./gamejs/utils/math":37,"./gamejs/utils/matrix":38,"./gamejs/utils/objects":39,"./gamejs/utils/prng":40,"./gamejs/utils/uri":41,"./gamejs/utils/vectors":42,"./gamejs/worker":43,"./gamejs/xml":44}],18:[function(require,module,exports){
+},{"./gamejs/callback":16,"./gamejs/display":17,"./gamejs/draw":18,"./gamejs/event":19,"./gamejs/font":20,"./gamejs/http":21,"./gamejs/image":22,"./gamejs/mask":23,"./gamejs/mixer":24,"./gamejs/noise":25,"./gamejs/pathfinding/astar":26,"./gamejs/sprite":27,"./gamejs/surfacearray":28,"./gamejs/time":29,"./gamejs/tmx":30,"./gamejs/transform":31,"./gamejs/utils/arrays":32,"./gamejs/utils/base64":33,"./gamejs/utils/math":35,"./gamejs/utils/matrix":36,"./gamejs/utils/objects":37,"./gamejs/utils/prng":38,"./gamejs/utils/uri":39,"./gamejs/utils/vectors":40,"./gamejs/worker":41,"./gamejs/xml":42}],16:[function(require,module,exports){
 /**
  * Manage a callback with scope
  */
@@ -3039,7 +2402,7 @@ var Callback = exports.Callback = function(fn, scope) {
 Callback.prototype.trigger = function() {
 	this.fn.apply(this.fnScope, arguments);
 };
-},{}],19:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var Surface = require('../gamejs').Surface;
 
 /**
@@ -3296,7 +2659,7 @@ var getSurface = exports.getSurface = function() {
    return SURFACE;
 };
 
-},{"../gamejs":17,"./event":21}],20:[function(require,module,exports){
+},{"../gamejs":15,"./event":19}],18:[function(require,module,exports){
 /**
  * @fileoverview Utilities for drawing geometrical objects to Surfaces. If you want to put images on
  * the screen see gamejs/image.
@@ -3548,7 +2911,7 @@ exports.bezierCurve = function(surface, color, startPos, endPos, ct1Pos, ct2Pos,
 
    ctx.restore();
 };
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var display = require('./display');
 var Callback = require('./callback').Callback;
 
@@ -3817,7 +3180,7 @@ exports.init = function() {
 
 };
 
-},{"./callback":18,"./display":19}],22:[function(require,module,exports){
+},{"./callback":16,"./display":17}],20:[function(require,module,exports){
 var Surface = require('../gamejs').Surface;
 var objects = require('./utils/objects');
 
@@ -3908,7 +3271,7 @@ objects.accessors(Font.prototype, {
 
 });
 
-},{"../gamejs":17,"./utils/objects":39}],23:[function(require,module,exports){
+},{"../gamejs":15,"./utils/objects":37}],21:[function(require,module,exports){
 /**
  * @fileoverview Make synchronous http requests to your game's serverside component.
  *
@@ -4026,7 +3389,7 @@ exports.save = function(url, data, type) {
    return stringify(post(ajaxBaseHref() + url, {payload: data}, type));
 };
 
-},{}],24:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var gamejs = require('../gamejs');
 
 /**
@@ -4159,7 +3522,7 @@ var addToCache = function(img) {
    return;
 };
 
-},{"../gamejs":17}],25:[function(require,module,exports){
+},{"../gamejs":15}],23:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var objects = require('./utils/objects');
 
@@ -4411,7 +3774,7 @@ objects.accessors(Mask.prototype, {
    }
 });
 
-},{"../gamejs":17,"./utils/objects":39}],26:[function(require,module,exports){
+},{"../gamejs":15,"./utils/objects":37}],24:[function(require,module,exports){
 var gamejs = require('../gamejs');
 
 /**
@@ -4606,7 +3969,7 @@ exports.Sound = function Sound(uriOrAudio) {
    return this;
 };
 
-},{"../gamejs":17}],27:[function(require,module,exports){
+},{"../gamejs":15}],25:[function(require,module,exports){
 /**
  * @fileoverview
  * A noise generator comparable to Perlin noise, which is useful
@@ -4832,7 +4195,7 @@ Simplex.prototype.get3d = function(xin, yin, zin) {
   return 32.0*(n0 + n1 + n2 + n3);
 };
 
-},{}],28:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /**
  * @fileoverview
  * AStar Path finding algorithm
@@ -4990,7 +4353,7 @@ Map.prototype.actualDistance = function(pointA, pointB) {
    return 1;
 };
 
-},{"../utils/binaryheap":36}],29:[function(require,module,exports){
+},{"../utils/binaryheap":34}],27:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var arrays = require('./utils/arrays');
 var $o = require('./utils/objects');
@@ -5417,7 +4780,7 @@ exports.collideCircle = function(spriteA, spriteB) {
    return $v.distance(spriteA.rect.center, spriteB.rect.center) <= rA + rB;
 };
 
-},{"../gamejs":17,"./utils/arrays":34,"./utils/objects":39,"./utils/vectors":42}],30:[function(require,module,exports){
+},{"../gamejs":15,"./utils/arrays":32,"./utils/objects":37,"./utils/vectors":40}],28:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var accessors = require('./utils/objects').accessors;
 /**
@@ -5549,7 +4912,7 @@ var SurfaceArray = exports.SurfaceArray = function(surfaceOrDimensions) {
    return this;
 };
 
-},{"../gamejs":17,"./utils/objects":39}],31:[function(require,module,exports){
+},{"../gamejs":15,"./utils/objects":37}],29:[function(require,module,exports){
 /**
  * @fileoverview
  * Only used by GameJs internally to provide a game loop.
@@ -5599,7 +4962,7 @@ var perInterval = function() {
    return;
 };
 
-},{"./callback":18}],32:[function(require,module,exports){
+},{"./callback":16}],30:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var objects = require('./utils/objects');
 var xml = require('./xml');
@@ -5899,7 +5262,7 @@ var setProperties = function(object, node) {
    return object;
 };
 
-},{"../gamejs":17,"./utils/base64":35,"./utils/objects":39,"./utils/uri":41,"./xml":44}],33:[function(require,module,exports){
+},{"../gamejs":15,"./utils/base64":33,"./utils/objects":37,"./utils/uri":39,"./xml":42}],31:[function(require,module,exports){
 var Surface = require('../gamejs').Surface;
 var matrix = require('./utils/matrix');
 var math = require('./utils/math');
@@ -6004,7 +5367,7 @@ exports.flip = function(surface, flipHorizontal, flipVertical) {
    return newSurface;
 };
 
-},{"../gamejs":17,"./utils/math":37,"./utils/matrix":38,"./utils/vectors":42}],34:[function(require,module,exports){
+},{"../gamejs":15,"./utils/math":35,"./utils/matrix":36,"./utils/vectors":40}],32:[function(require,module,exports){
 /**
  * @fileoverview Utility functions for working with Obiects
  * @param {Object} item
@@ -6035,7 +5398,7 @@ exports.shuffle = function(array) {
     return array;
 };
 
-},{}],35:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /**
  * @fileoverview
  * Base64 encode / decode
@@ -6096,7 +5459,7 @@ exports.decodeAsArray = function(input, bytes) {
    return array;
 }
 ;
-},{}],36:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 /**
  * Binary Heap
  *
@@ -6252,7 +5615,7 @@ BinaryHeap.prototype.bubbleUp = function(idx) {
    return;
 };
 
-},{}],37:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 /**
  *
  * absolute angle to relative angle, in degrees
@@ -6321,7 +5684,7 @@ exports.centroid = function() {
    ];
 };
 
-},{}],38:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /**
  * @fileoverview Matrix manipulation, used by GameJs itself. You
  * probably do not need this unless you manipulate a Context's transformation
@@ -6413,7 +5776,7 @@ var scale = exports.scale = function(m1, svec) {
    return multiply(m1, [sx, 0, 0, sy, 0, 0]);
 };
 
-},{}],39:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 /**
  * @fileoverview Utility functions for working with Objects
  */
@@ -6516,7 +5879,7 @@ exports.accessors = function(object, props) {
    return;
 };
 
-},{}],40:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 /**
  * @fileoverview A seedable random-number generator.
  *
@@ -6667,7 +6030,7 @@ exports.random = function() {
 exports.init = function(seed) {
   alea = new Alea(seed);
 };
-},{}],41:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /**
  * @fileoverview Utilies for URI handling.
  *
@@ -6785,7 +6148,7 @@ var removeDotSegments = function(path) {
    return out.join('/');
 };
 
-},{}],42:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 var math=require('./math');
 
 /**
@@ -6911,7 +6274,7 @@ exports.truncate = function(v, maxLength) {
    return v;
 };
 
-},{"./math":37}],43:[function(require,module,exports){
+},{"./math":35}],41:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var uri = require('./utils/uri');
 var Callback = require('./callback').Callback;
@@ -7136,7 +6499,7 @@ function guid(moduleId) {
    };
    return moduleId + '@' + (S4()+S4());
 }
-},{"../gamejs":17,"./callback":18,"./utils/uri":41}],44:[function(require,module,exports){
+},{"../gamejs":15,"./callback":16,"./utils/uri":39}],42:[function(require,module,exports){
 /**
  * @fileoverview
  *
@@ -7271,133 +6634,7 @@ Document.fromURL = function(url) {
    return new Document(response.responseXML);
 };
 
-},{}],45:[function(require,module,exports){
-/**
- * slice
- */
-
-var slice = Array.prototype.slice;
-
-/**
- * Primary export
- */
-
-var exports = module.exports = super_;
-
-/**
- * ### _super (dest, orig)
- *
- * Inherits the prototype methods or merges objects.
- * This is the primary export and it is recommended
- * that it be imported as `inherits` in node to match
- * the auto imported browser interface.
- *
- *     var inherits = require('super');
- *
- * @param {Object|Function} destination object
- * @param {Object|Function} source object
- * @name _super
- * @api public
- */
-
-function super_() {
-  var args = slice.call(arguments);
-  if (!args.length) return;
-  if (typeof args[0] !== 'function') return exports.merge(args);
-  exports.inherits.apply(null, args);
-};
-
-/**
- * ### extend (proto[, klass])
- *
- * Provide `.extend` mechanism to allow extenion without
- * needing to use dependancy.
- *
- *     function Bar () {
- *       this._konstructed = true;
- *     }
- *
- *     Bar.extend = inherits.extend;
- *
- *     var Fu = Bar.extend({
- *       initialize: function () {
- *         this._initialized = true;
- *       }
- *     });
- *
- *     var fu = new Fu();
- *     fu.should.be.instanceof(Fu); // true
- *     fu.should.be.instanceof(Bar); // true
- *
- * @param {Object} properties/methods to add to new prototype
- * @param {Object} properties/methods to add to new class
- * @returns {Object} new constructor
- * @name extend
- * @api public
- */
-
-exports.extend = function(proto, klass) {
-  var self = this
-    , child = function () { return self.apply(this, arguments); };
-  exports.merge([ child, this ]);
-  exports.inherits(child, this);
-  if (proto) exports.merge([ child.prototype, proto ]);
-  if (klass) exports.merge([ child, klass ]);
-  child.extend = this.extend; // prevent overwrite
-  return child;
-};
-
-/**
- * ### inherits (ctor, superCtor)
- *
- * Inherit the prototype methods from on contructor
- * to another.
- *
- * @param {Function} destination
- * @param {Function} source
- * @api private
- */
-
-exports.inherits = function(ctor, superCtor) {
-  ctor.super_ = superCtor;
-  if (Object.create) {
-    ctor.prototype = Object.create(superCtor.prototype,
-      { constructor: {
-            value: ctor
-          , enumerable: false
-          , writable: true
-          , configurable: true
-        }
-    });
-  } else {
-    ctor.prototype = new superCtor();
-    ctor.prototype.constructor = ctor;
-  }
-}
-
-/**
- * Extends multiple objects.
- *
- * @param {Array} array of objects
- * @api private
- */
-
-exports.merge = function (arr) {
-  var main = arr.length === 2 ? arr.shift() : {};
-  var obj = null;
-
-  for (var i = 0, len = arr.length; i < len; i++) {
-    obj = arr[i];
-    for (var p in obj) {
-      if (!obj.hasOwnProperty(p)) continue;
-      main[p] = obj[p];
-    }
-  }
-
-  return main;
-};
-
-},{}],46:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -8676,3 +7913,4 @@ exports.merge = function (arr) {
 }).call(this);
 
 },{}]},{},[2])
+;
