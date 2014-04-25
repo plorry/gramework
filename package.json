@@ -12,7 +12,8 @@
   "dependencies": {
     "gamejs": "1.0.0",
     "super": "~0.2.3",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "watchjs": "0.0.0"
   },
   "license": "MIT",
   "repository": {

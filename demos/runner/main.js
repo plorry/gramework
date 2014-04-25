@@ -9,6 +9,7 @@ var _ = require('underscore'),
     GameController = gramework.input.GameController,
     Entity = gramework.Entity,
     Scene = gramework.Scene,
+    Element = gramework.uielements.Element,
     Vec2d = gramework.vectors.Vec2d;
 
 var Hud = require('./hud');
@@ -96,7 +97,7 @@ var Player = function(options) {
     this.isPlayer = true;
 
     this.world = options.world;
-    this.sprite = new animate.SpriteSheet('./assets/runner.png', 32, 64);
+    this.sprite = new animate.SpriteSheet('./assets/nother.png', 12, 29);
     this.anim = new animate.Animation(this.sprite, "running", {
         running: {frames: _.range(8), rate: 8.5},
         jump: {frames: [1, 0, 1, 4], rate: 2.5}
@@ -226,6 +227,7 @@ _.extend(Player.prototype, Entity.prototype, {
     }
 });
 
+
 var EndScreen = function(options) {
     Scene.apply(this, arguments);
     this.world = options.world;
@@ -266,7 +268,9 @@ var World = function(options) {
         width: 32, height: 64,
         world: this
     });
+
     this.actors.add(this.player);
+    this.elements.add(this.element);
     this.accel = 2;
     this.speed = 5;
     this.maxSpeed = 55;
@@ -368,16 +372,14 @@ _.extend(Game.prototype, {
 });
 
 var main = function() {
-    var dispatch = new Dispatcher({
+
+    var dispatch = new Dispatcher(gamejs, {
         initial: new Game()
     });
 
-    var mainSurface = gamejs.display.setMode(
-        [800, 600], gamejs.display.DISABLE_SMOOTHING);
 
     gamejs.onTick(function(dt) {
-        dispatch.update(dt);
-        dispatch.draw(mainSurface);
+        dispatch.onTick(dt);
     }, this, 60);
 
     gamejs.onEvent(function(ev) {
@@ -390,8 +392,9 @@ gamejs.preload([
     './assets/numbers.png',
     './assets/numbers-small.png',
     './assets/coin.png',
-    './assets/runner.png',
+    './assets/nother.png',
     './assets/background.png',
     './assets/foreground.png',
+    './assets/border.png'
 ]);
 gamejs.ready(main);
