@@ -361,7 +361,7 @@ _.extend(Game.prototype, {
     update: function(dt) {
         this.world.update(dt);
     },
-    
+
     event: function(ev) {
         this.world.event(ev);
     }
