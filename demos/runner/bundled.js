@@ -796,8 +796,6 @@ _.extend(Dispatcher.prototype, {
     // Internal function to set surface from canvas. Overrided in tests until we
     // can better figure out how to mock a *real* canvas.
     _setSurface: function(gamejs, canvas, surfaceFlag) {
-        console.log(gamejs);
-
         var surface = gamejs.display.setMode(
         [canvas.width, canvas.height], surfaceFlag);
         return surface;
@@ -883,8 +881,8 @@ var Entity = module.exports = function(options) {
     this.h = options.height;
 
     this.rect = new gamejs.Rect([
-        options.x,// + this.w / 2,
-        options.y// + this.h / 2
+        options.x,
+        options.y
     ], [this.w, this.h]);
 
     this.initialize.apply(this, arguments);
@@ -956,14 +954,10 @@ var GameController = exports.GameController = function(options) {
         this.reverseControls[this.controls[key]] = key;
     }
 
-    //this.initialize.apply(this, arguments);
+    this.initialize.apply(this, arguments);
 };
 
 GameController.extend = inherits.extend;
-
-_.extend(GameController.prototype, {
-    initialize: function() {}
-});
 
 // An empty function by default. Override it with your own initialization logic.
 GameController.prototype.initialize = function(options) {};
