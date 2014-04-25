@@ -33,7 +33,7 @@ _.extend(Hud.prototype, gamejs.Rect.prototype, {
     }
 });
 
-},{"../../../gramework":3,"gamejs":16,"underscore":45}],2:[function(require,module,exports){
+},{"../../../gramework":3,"gamejs":17,"underscore":46}],2:[function(require,module,exports){
 /*global window, GLOBALS*/
 var _ = require('underscore'),
     gamejs = require('gamejs'),
@@ -435,7 +435,7 @@ gamejs.preload([
 ]);
 gamejs.ready(main);
 
-},{"../../../gramework":3,"./hud":1,"gamejs":16,"underscore":45}],3:[function(require,module,exports){
+},{"../../../gramework":3,"./hud":1,"gamejs":17,"underscore":46}],3:[function(require,module,exports){
 var gamejs = require('gamejs'),
     inherits = require('super');
 
@@ -457,6 +457,7 @@ module.exports = {
     Camera: require('./gramework/camera'),
     Scene: require('./gramework/scenes').Scene,
     animate: require('./gramework/animate'),
+    state: require('./gramework/state'),
     image: require('./gramework/image'),
     input: require('./gramework/input'),
     layers: require('./gramework/layers'),
@@ -472,8 +473,7 @@ module.exports = {
 //TODO: Kill this in favour of Entity
 //exports.actors = require('./gramework/actors');
 
-
-},{"./gramework/animate":4,"./gramework/camera":5,"./gramework/dispatcher":6,"./gramework/entity":7,"./gramework/image":8,"./gramework/input":9,"./gramework/layers":10,"./gramework/particles":11,"./gramework/scenes":12,"./gramework/tilemap":13,"./gramework/uielements":14,"./gramework/vectors":15,"gamejs":16,"super":44}],4:[function(require,module,exports){
+},{"./gramework/animate":4,"./gramework/camera":5,"./gramework/dispatcher":6,"./gramework/entity":7,"./gramework/image":8,"./gramework/input":9,"./gramework/layers":10,"./gramework/particles":11,"./gramework/scenes":12,"./gramework/state":13,"./gramework/tilemap":14,"./gramework/uielements":15,"./gramework/vectors":16,"gamejs":17,"super":45}],4:[function(require,module,exports){
 var gamejs = require('gamejs'),
     inherits = require('super'),
     _ = require('underscore');
@@ -575,7 +575,7 @@ Animation.prototype.update = function(msDuration) {
     return this.image;
 };
 
-},{"gamejs":16,"super":44,"underscore":45}],5:[function(require,module,exports){
+},{"gamejs":17,"super":45,"underscore":46}],5:[function(require,module,exports){
 /*
  * Create a camera around a display.
  *
@@ -748,21 +748,23 @@ _.extend(Camera.prototype, {
     }
 });
 
-},{"gamejs":16,"underscore":45}],6:[function(require,module,exports){
+},{"gamejs":17,"underscore":46}],6:[function(require,module,exports){
 /*global document*/
 var _ = require('underscore'),
-    inherits = require('super');
+    inherits = require('super'),
+    Transition = require('./state').Transition;
 
 function DispatcherException(message) {
     this.message = message;
     this.name = "DispatcherException";
 }
 
-// TODO: Transitions!
 var Dispatcher = module.exports = function(gamejs, options) {
     options = (options || {});
 
     this.stack = [];
+    this.defaultTransition = (typeof options.defaultTransition === "undefined" ? Transition : options.defaultTransition);
+
     if (options.initial) {
         this.push(options.initial);
     }
@@ -819,8 +821,19 @@ _.extend(Dispatcher.prototype, {
     },
 
     push: function(state, transition) {
-        state.dispatcher = this;
-        this.stack.push(state);
+        if (transition !== null) {
+            transition = (transition || this.defaultTransition);
+        }
+
+        if (transition) {
+            var ts = new transition(this.top(), state);
+            ts.dispatcher = this;
+            this.stack.push(ts);
+        } else {
+            state.dispatcher = this;
+            this.stack.push(state);
+        }
+
     },
 
     top: function() {
@@ -850,7 +863,7 @@ _.extend(Dispatcher.prototype, {
     }
 });
 
-},{"super":44,"underscore":45}],7:[function(require,module,exports){
+},{"./state":13,"super":45,"underscore":46}],7:[function(require,module,exports){
 // A stripped down, simpler Actors module.
 var gamejs = require('gamejs'),
     inherits = require('super'),
@@ -907,14 +920,14 @@ Entity.prototype.setPos = function(x, y) {
     this.rect.y = y;
 };
 
-},{"gamejs":16,"super":44}],8:[function(require,module,exports){
+},{"gamejs":17,"super":45}],8:[function(require,module,exports){
 var gamejs = require('gamejs');
 
 var imgfy = exports.imgfy = function(path) {
     return gamejs.image.load(path);
 };
 
-},{"gamejs":16}],9:[function(require,module,exports){
+},{"gamejs":17}],9:[function(require,module,exports){
 var gamejs = require('gamejs'),
     inherits = require('super'),
     Vec2d = require('./vectors').Vec2d,
@@ -1011,7 +1024,7 @@ GameController.prototype.movementVector = function() {
     return vel.normalized();
 };
 
-},{"./vectors":15,"gamejs":16,"super":44,"underscore":45}],10:[function(require,module,exports){
+},{"./vectors":16,"gamejs":17,"super":45,"underscore":46}],10:[function(require,module,exports){
 var imgfy = require('./image').imgfy;
 
 // Use for repeating Backgrounds on a screen, adjust speed
@@ -1136,16 +1149,26 @@ Emitter.prototype.draw = function(surface) {
     }, this);
 };
 
-},{"gamejs":16}],12:[function(require,module,exports){
+},{"gamejs":17}],12:[function(require,module,exports){
 var gamejs = require('gamejs'),
     inherits = require('super'),
     Camera = require('./camera'),
     _ = require('underscore');
 
 var Scene = exports.Scene = function(options) {
+    options = (options || {});
+
     this._elapsed = 0;
     this._width = options.width;
     this._height = options.height;
+
+    // No options passed, but we can give sensible defaults by getting the games
+    // main surface.
+    if (!this._width || !this._height) {
+        var size = gamejs.display.getSurface().getSize();
+        this._width = (this._width || size[0]);
+        this._height = (this._height || size[1]);
+    }
 
     // Actors will be deprecated in favour of entities.
     this.actors = new gamejs.sprite.Group();
@@ -1219,7 +1242,70 @@ _.extend(Scene.prototype, {
     }
 });
 
-},{"./camera":5,"gamejs":16,"super":44,"underscore":45}],13:[function(require,module,exports){
+},{"./camera":5,"gamejs":17,"super":45,"underscore":46}],13:[function(require,module,exports){
+var gamejs = require('gamejs'),
+    inherits = require('super');
+
+var Transition = function(before, after, options) {
+    options = (options || {});
+
+    this.before = before;
+    this.after = after;
+
+    if (!this.time) {
+        this.time = (options.time || 2.0);
+    }
+
+    if (!this.colour) {
+        this.colour = (options.colour || [255, 0, 255]);
+    }
+
+    this.p = 0;
+    this.initialize.apply(this, arguments);
+};
+
+Transition.prototype.initialize = function(before, after, options) {};
+Transition.prototype.draw = function(surface) {};
+Transition.prototype.update = function(dt) { this.dispatcher.push(this.after, null); };
+Transition.extend = inherits.extend;
+
+var FadeTransition = Transition.extend({
+    time: 2.0,
+    colour: [0, 0, 0]
+});
+
+FadeTransition.prototype.draw = function(surface) {
+    var alpha;
+    surface.clear();
+
+    // At the start of the transition, we go from a solid block to 0-alpha, and
+    // then we begin showing the new state going from 1-alpha to 0-alpha again.
+    if (this.p < (this.time / 2) && this.before) {
+        alpha = (this.time - this.p) * this.p;
+        this.before.draw(surface);
+    } else {
+        alpha = (this.time - this.p) / this.p;
+        this.after.draw(surface);
+    }
+
+    var rgbaString = ["rgba(", this.colour.join(",") + ",", alpha, ")"].join('');
+    surface.fill(rgbaString);
+};
+FadeTransition.prototype.update = function(dt) {
+    dt = (dt / 1000);
+
+    this.p += dt;
+    if (this.p >= this.time) {
+        this.dispatcher.push(this.after, null);
+    }
+};
+
+module.exports = {
+    Transition: Transition,
+    FadeTransition: FadeTransition
+};
+
+},{"gamejs":17,"super":45}],14:[function(require,module,exports){
 /*jshint es5:true */
 /*
  * Tilemap module.
@@ -1369,7 +1455,7 @@ var LayerView = function(map, layer, opts) {
     return this;
 };
 
-},{"gamejs":16,"super":44}],14:[function(require,module,exports){
+},{"gamejs":17,"super":45}],15:[function(require,module,exports){
 /*jshint es5:true */
 /*
  * Interface Entity module.
@@ -1785,7 +1871,7 @@ SliderWidget.prototype.init = function(options){
 };
 
 */
-},{"./entity":7,"gamejs":16,"super":44,"underscore":45}],15:[function(require,module,exports){
+},{"./entity":7,"gamejs":17,"super":45,"underscore":46}],16:[function(require,module,exports){
 /*jslint es5: true*/
 /*
  * Vector Utilities
@@ -1962,7 +2048,7 @@ Vec2d.prototype = {
 };
 
 
-},{"gamejs":16,"underscore":45}],16:[function(require,module,exports){
+},{"gamejs":17,"underscore":46}],17:[function(require,module,exports){
 var matrix = require('./gamejs/utils/matrix');
 var objects = require('./gamejs/utils/objects');
 var Callback = require('./gamejs/callback').Callback;
@@ -2948,7 +3034,7 @@ exports.onEvent = function(fn, scope) {
 exports.onTick = function(fn, scope) {
   exports.time._CALLBACK = new Callback(fn, scope);
 };
-},{"./gamejs/callback":17,"./gamejs/display":18,"./gamejs/draw":19,"./gamejs/event":20,"./gamejs/font":21,"./gamejs/http":22,"./gamejs/image":23,"./gamejs/mask":24,"./gamejs/mixer":25,"./gamejs/noise":26,"./gamejs/pathfinding/astar":27,"./gamejs/sprite":28,"./gamejs/surfacearray":29,"./gamejs/time":30,"./gamejs/tmx":31,"./gamejs/transform":32,"./gamejs/utils/arrays":33,"./gamejs/utils/base64":34,"./gamejs/utils/math":36,"./gamejs/utils/matrix":37,"./gamejs/utils/objects":38,"./gamejs/utils/prng":39,"./gamejs/utils/uri":40,"./gamejs/utils/vectors":41,"./gamejs/worker":42,"./gamejs/xml":43}],17:[function(require,module,exports){
+},{"./gamejs/callback":18,"./gamejs/display":19,"./gamejs/draw":20,"./gamejs/event":21,"./gamejs/font":22,"./gamejs/http":23,"./gamejs/image":24,"./gamejs/mask":25,"./gamejs/mixer":26,"./gamejs/noise":27,"./gamejs/pathfinding/astar":28,"./gamejs/sprite":29,"./gamejs/surfacearray":30,"./gamejs/time":31,"./gamejs/tmx":32,"./gamejs/transform":33,"./gamejs/utils/arrays":34,"./gamejs/utils/base64":35,"./gamejs/utils/math":37,"./gamejs/utils/matrix":38,"./gamejs/utils/objects":39,"./gamejs/utils/prng":40,"./gamejs/utils/uri":41,"./gamejs/utils/vectors":42,"./gamejs/worker":43,"./gamejs/xml":44}],18:[function(require,module,exports){
 /**
  * Manage a callback with scope
  */
@@ -2962,7 +3048,7 @@ var Callback = exports.Callback = function(fn, scope) {
 Callback.prototype.trigger = function() {
 	this.fn.apply(this.fnScope, arguments);
 };
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var Surface = require('../gamejs').Surface;
 
 /**
@@ -3219,7 +3305,7 @@ var getSurface = exports.getSurface = function() {
    return SURFACE;
 };
 
-},{"../gamejs":16,"./event":20}],19:[function(require,module,exports){
+},{"../gamejs":17,"./event":21}],20:[function(require,module,exports){
 /**
  * @fileoverview Utilities for drawing geometrical objects to Surfaces. If you want to put images on
  * the screen see gamejs/image.
@@ -3471,7 +3557,7 @@ exports.bezierCurve = function(surface, color, startPos, endPos, ct1Pos, ct2Pos,
 
    ctx.restore();
 };
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var display = require('./display');
 var Callback = require('./callback').Callback;
 
@@ -3740,7 +3826,7 @@ exports.init = function() {
 
 };
 
-},{"./callback":17,"./display":18}],21:[function(require,module,exports){
+},{"./callback":18,"./display":19}],22:[function(require,module,exports){
 var Surface = require('../gamejs').Surface;
 var objects = require('./utils/objects');
 
@@ -3831,7 +3917,7 @@ objects.accessors(Font.prototype, {
 
 });
 
-},{"../gamejs":16,"./utils/objects":38}],22:[function(require,module,exports){
+},{"../gamejs":17,"./utils/objects":39}],23:[function(require,module,exports){
 /**
  * @fileoverview Make synchronous http requests to your game's serverside component.
  *
@@ -3949,7 +4035,7 @@ exports.save = function(url, data, type) {
    return stringify(post(ajaxBaseHref() + url, {payload: data}, type));
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var gamejs = require('../gamejs');
 
 /**
@@ -4082,7 +4168,7 @@ var addToCache = function(img) {
    return;
 };
 
-},{"../gamejs":16}],24:[function(require,module,exports){
+},{"../gamejs":17}],25:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var objects = require('./utils/objects');
 
@@ -4334,7 +4420,7 @@ objects.accessors(Mask.prototype, {
    }
 });
 
-},{"../gamejs":16,"./utils/objects":38}],25:[function(require,module,exports){
+},{"../gamejs":17,"./utils/objects":39}],26:[function(require,module,exports){
 var gamejs = require('../gamejs');
 
 /**
@@ -4529,7 +4615,7 @@ exports.Sound = function Sound(uriOrAudio) {
    return this;
 };
 
-},{"../gamejs":16}],26:[function(require,module,exports){
+},{"../gamejs":17}],27:[function(require,module,exports){
 /**
  * @fileoverview
  * A noise generator comparable to Perlin noise, which is useful
@@ -4755,7 +4841,7 @@ Simplex.prototype.get3d = function(xin, yin, zin) {
   return 32.0*(n0 + n1 + n2 + n3);
 };
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 /**
  * @fileoverview
  * AStar Path finding algorithm
@@ -4913,7 +4999,7 @@ Map.prototype.actualDistance = function(pointA, pointB) {
    return 1;
 };
 
-},{"../utils/binaryheap":35}],28:[function(require,module,exports){
+},{"../utils/binaryheap":36}],29:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var arrays = require('./utils/arrays');
 var $o = require('./utils/objects');
@@ -5340,7 +5426,7 @@ exports.collideCircle = function(spriteA, spriteB) {
    return $v.distance(spriteA.rect.center, spriteB.rect.center) <= rA + rB;
 };
 
-},{"../gamejs":16,"./utils/arrays":33,"./utils/objects":38,"./utils/vectors":41}],29:[function(require,module,exports){
+},{"../gamejs":17,"./utils/arrays":34,"./utils/objects":39,"./utils/vectors":42}],30:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var accessors = require('./utils/objects').accessors;
 /**
@@ -5472,7 +5558,7 @@ var SurfaceArray = exports.SurfaceArray = function(surfaceOrDimensions) {
    return this;
 };
 
-},{"../gamejs":16,"./utils/objects":38}],30:[function(require,module,exports){
+},{"../gamejs":17,"./utils/objects":39}],31:[function(require,module,exports){
 /**
  * @fileoverview
  * Only used by GameJs internally to provide a game loop.
@@ -5522,7 +5608,7 @@ var perInterval = function() {
    return;
 };
 
-},{"./callback":17}],31:[function(require,module,exports){
+},{"./callback":18}],32:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var objects = require('./utils/objects');
 var xml = require('./xml');
@@ -5822,7 +5908,7 @@ var setProperties = function(object, node) {
    return object;
 };
 
-},{"../gamejs":16,"./utils/base64":34,"./utils/objects":38,"./utils/uri":40,"./xml":43}],32:[function(require,module,exports){
+},{"../gamejs":17,"./utils/base64":35,"./utils/objects":39,"./utils/uri":41,"./xml":44}],33:[function(require,module,exports){
 var Surface = require('../gamejs').Surface;
 var matrix = require('./utils/matrix');
 var math = require('./utils/math');
@@ -5927,7 +6013,7 @@ exports.flip = function(surface, flipHorizontal, flipVertical) {
    return newSurface;
 };
 
-},{"../gamejs":16,"./utils/math":36,"./utils/matrix":37,"./utils/vectors":41}],33:[function(require,module,exports){
+},{"../gamejs":17,"./utils/math":37,"./utils/matrix":38,"./utils/vectors":42}],34:[function(require,module,exports){
 /**
  * @fileoverview Utility functions for working with Obiects
  * @param {Object} item
@@ -5958,7 +6044,7 @@ exports.shuffle = function(array) {
     return array;
 };
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 /**
  * @fileoverview
  * Base64 encode / decode
@@ -6019,7 +6105,7 @@ exports.decodeAsArray = function(input, bytes) {
    return array;
 }
 ;
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /**
  * Binary Heap
  *
@@ -6175,7 +6261,7 @@ BinaryHeap.prototype.bubbleUp = function(idx) {
    return;
 };
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 /**
  *
  * absolute angle to relative angle, in degrees
@@ -6244,7 +6330,7 @@ exports.centroid = function() {
    ];
 };
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 /**
  * @fileoverview Matrix manipulation, used by GameJs itself. You
  * probably do not need this unless you manipulate a Context's transformation
@@ -6336,7 +6422,7 @@ var scale = exports.scale = function(m1, svec) {
    return multiply(m1, [sx, 0, 0, sy, 0, 0]);
 };
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /**
  * @fileoverview Utility functions for working with Objects
  */
@@ -6439,7 +6525,7 @@ exports.accessors = function(object, props) {
    return;
 };
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /**
  * @fileoverview A seedable random-number generator.
  *
@@ -6590,7 +6676,7 @@ exports.random = function() {
 exports.init = function(seed) {
   alea = new Alea(seed);
 };
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /**
  * @fileoverview Utilies for URI handling.
  *
@@ -6708,7 +6794,7 @@ var removeDotSegments = function(path) {
    return out.join('/');
 };
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 var math=require('./math');
 
 /**
@@ -6834,7 +6920,7 @@ exports.truncate = function(v, maxLength) {
    return v;
 };
 
-},{"./math":36}],42:[function(require,module,exports){
+},{"./math":37}],43:[function(require,module,exports){
 var gamejs = require('../gamejs');
 var uri = require('./utils/uri');
 var Callback = require('./callback').Callback;
@@ -7059,7 +7145,7 @@ function guid(moduleId) {
    };
    return moduleId + '@' + (S4()+S4());
 }
-},{"../gamejs":16,"./callback":17,"./utils/uri":40}],43:[function(require,module,exports){
+},{"../gamejs":17,"./callback":18,"./utils/uri":41}],44:[function(require,module,exports){
 /**
  * @fileoverview
  *
@@ -7194,7 +7280,7 @@ Document.fromURL = function(url) {
    return new Document(response.responseXML);
 };
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 /**
  * slice
  */
@@ -7320,7 +7406,7 @@ exports.merge = function (arr) {
   return main;
 };
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
